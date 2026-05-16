@@ -4,21 +4,162 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>3x3 Sliding Puzzle</title>
-    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-mini-title-width" />
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-puzzle-stopwatch" />
   </head>
   <body class="mini-app">
     <main class="mini-app-panel">
       <p class="eyebrow">Game</p>
-      <h1>3x3 Sliding Puzzle</h1>
+      <div class="mini-app-header">
+        <h1>3x3 Sliding Puzzle</h1>
+        <button class="icon-button" type="button" id="timer-toggle" aria-pressed="false" aria-label="스톱워치 모드">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="10" x2="14" y1="2" y2="2"></line>
+            <line x1="12" x2="15" y1="14" y2="11"></line>
+            <circle cx="12" cy="14" r="8"></circle>
+          </svg>
+        </button>
+      </div>
+      <section class="stopwatch-panel" id="stopwatch-panel" hidden>
+        <div class="stopwatch-time" id="stopwatch-time">00:00.00</div>
+        <p class="stopwatch-status" id="stopwatch-status">첫 타일을 움직이면 시작됩니다.</p>
+      </section>
       <div class="tile-grid" id="tile-grid" data-grid-size="3" aria-label="Puzzle board"></div>
       <button class="primary-button" type="button" id="shuffle-button">NEW</button>
+      <section class="puzzle-records" id="puzzle-records" hidden>
+        <p class="records-title">RECORDS</p>
+        <div class="record-list" id="record-list"></div>
+      </section>
     </main>
     <script>
       const grid = document.querySelector("#tile-grid");
       const shuffleButton = document.querySelector("#shuffle-button");
+      const timerToggle = document.querySelector("#timer-toggle");
+      const stopwatchPanel = document.querySelector("#stopwatch-panel");
+      const stopwatchTime = document.querySelector("#stopwatch-time");
+      const stopwatchStatus = document.querySelector("#stopwatch-status");
+      const recordsPanel = document.querySelector("#puzzle-records");
+      const recordList = document.querySelector("#record-list");
       const gridSize = 3;
       const tileImageVersion = "20260516-tile-09";
+      const storageKey = `ashosho-puzzle-${gridSize}x${gridSize}-records`;
       let tiles = [...Array(gridSize * gridSize - 1).keys()].map((index) => index + 1).concat(null);
+      let stopwatchMode = false;
+      let timerStarted = false;
+      let timerStopped = false;
+      let startTime = 0;
+      let elapsedTime = 0;
+      let timerFrame = null;
+      let records = loadRecords();
+
+      function loadRecords() {
+        try {
+          const savedRecords = JSON.parse(localStorage.getItem(storageKey));
+          return Array.isArray(savedRecords) ? savedRecords : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveRecords() {
+        localStorage.setItem(storageKey, JSON.stringify(records));
+      }
+
+      function createRecordId() {
+        if (crypto.randomUUID) return crypto.randomUUID();
+        return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      }
+
+      function formatElapsed(milliseconds) {
+        const totalCentiseconds = Math.floor(milliseconds / 10);
+        const centiseconds = totalCentiseconds % 100;
+        const totalSeconds = Math.floor(totalCentiseconds / 100);
+        const seconds = totalSeconds % 60;
+        const minutes = Math.floor(totalSeconds / 60);
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}`;
+      }
+
+      function updateStopwatch() {
+        if (!timerStarted || timerStopped) return;
+        elapsedTime = performance.now() - startTime;
+        stopwatchTime.textContent = formatElapsed(elapsedTime);
+        timerFrame = requestAnimationFrame(updateStopwatch);
+      }
+
+      function resetStopwatch() {
+        timerStarted = false;
+        timerStopped = false;
+        elapsedTime = 0;
+        if (timerFrame) cancelAnimationFrame(timerFrame);
+        timerFrame = null;
+        stopwatchTime.textContent = "00:00.00";
+        stopwatchStatus.textContent = "첫 타일을 움직이면 시작됩니다.";
+      }
+
+      function startStopwatch() {
+        if (!stopwatchMode || timerStarted || timerStopped) return;
+        timerStarted = true;
+        startTime = performance.now();
+        stopwatchStatus.textContent = "진행 중";
+        updateStopwatch();
+      }
+
+      function stopStopwatch() {
+        if (!timerStarted || timerStopped) return;
+        timerStopped = true;
+        elapsedTime = performance.now() - startTime;
+        if (timerFrame) cancelAnimationFrame(timerFrame);
+        timerFrame = null;
+        stopwatchTime.textContent = formatElapsed(elapsedTime);
+        stopwatchStatus.textContent = "완료";
+        addRecord(elapsedTime);
+      }
+
+      function isSolved() {
+        return tiles.every((tile, index) => {
+          if (index === tiles.length - 1) return tile === null;
+          return tile === index + 1;
+        });
+      }
+
+      function renderRecords() {
+        recordsPanel.hidden = !stopwatchMode;
+        if (records.length === 0) {
+          recordList.innerHTML = `<p class="record-empty">아직 기록이 없습니다.</p>`;
+          return;
+        }
+        recordList.innerHTML = records
+          .map(
+            (record) => `
+              <article class="record-item">
+                <div>
+                  <p class="record-time">${record.time}</p>
+                  <p class="record-meta">${record.savedAt}</p>
+                </div>
+                <button class="icon-button record-delete" type="button" data-record-id="${record.id}" aria-label="기록 삭제">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.5l9.6-9.6c1-1 2.5-1 3.5 0l4.6 4.6c1 1 1 2.5 0 3.5L11 21"></path>
+                    <path d="M22 21H7"></path>
+                    <path d="m5 11 9 9"></path>
+                  </svg>
+                </button>
+              </article>
+            `
+          )
+          .join("");
+      }
+
+      function addRecord(milliseconds) {
+        records = [
+          {
+            id: createRecordId(),
+            time: formatElapsed(milliseconds),
+            savedAt: new Date().toLocaleString("ko-KR"),
+          },
+          ...records,
+        ];
+        saveRecords();
+        renderRecords();
+      }
 
       function render() {
         grid.innerHTML = tiles
@@ -43,19 +184,22 @@
         return Math.abs(row - emptyRow) + Math.abs(col - emptyCol) === 1;
       }
 
-      function move(index) {
+      function move(index, shouldTrack = true) {
         if (!canMove(index)) return;
+        if (shouldTrack) startStopwatch();
         const emptyIndex = tiles.indexOf(null);
         [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
         render();
+        if (shouldTrack && stopwatchMode && isSolved()) stopStopwatch();
       }
 
       function shuffle() {
+        resetStopwatch();
         for (let i = 0; i < 90; i += 1) {
           const movable = tiles
             .map((tile, index) => (tile === null ? null : index))
             .filter((index) => index !== null && canMove(index));
-          move(movable[Math.floor(Math.random() * movable.length)]);
+          move(movable[Math.floor(Math.random() * movable.length)], false);
         }
         render();
       }
@@ -66,7 +210,25 @@
         move(Number(button.dataset.index));
       });
 
+      timerToggle.addEventListener("click", () => {
+        stopwatchMode = !stopwatchMode;
+        timerToggle.classList.toggle("is-active", stopwatchMode);
+        timerToggle.setAttribute("aria-pressed", String(stopwatchMode));
+        stopwatchPanel.hidden = !stopwatchMode;
+        resetStopwatch();
+        renderRecords();
+      });
+
+      recordList.addEventListener("click", (event) => {
+        const button = event.target.closest(".record-delete");
+        if (!button) return;
+        records = records.filter((record) => record.id !== button.dataset.recordId);
+        saveRecords();
+        renderRecords();
+      });
+
       shuffleButton.addEventListener("click", shuffle);
+      renderRecords();
       shuffle();
     </script>
   </body>
