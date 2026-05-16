@@ -34,107 +34,68 @@ const apps = [
   },
 ];
 
-const grid = document.querySelector("#catalog-grid");
-const emptyState = document.querySelector("#empty-state");
-const searchInput = document.querySelector("#search-input");
-const filterButtons = [...document.querySelectorAll(".filter-button")];
-const totalCount = document.querySelector("#total-count");
-const readyCount = document.querySelector("#ready-count");
+const appNameList = document.querySelector("#app-name-list");
+const detailMeta = document.querySelector("#detail-meta");
+const detailTitle = document.querySelector("#detail-title");
+const detailDescription = document.querySelector("#detail-description");
+const detailTags = document.querySelector("#detail-tags");
+const goLink = document.querySelector("#go-link");
 
-let currentFilter = "all";
-let searchTerm = "";
+let selectedIndex = 0;
 
-function renderThumbnail(type) {
-  if (type === "lotto") {
-    return `
-      <div class="thumb-panel" aria-hidden="true">
-        <div class="lotto-balls">
-          <span>7</span><span>12</span><span>19</span><span>28</span><span>34</span><span>41</span>
-        </div>
-      </div>
-    `;
-  }
-
-  if (type === "puzzle") {
-    return `
-      <div class="thumb-panel" aria-hidden="true">
-        <div class="puzzle-board">
-          <span>1</span><span>2</span><span>3</span>
-          <span>4</span><span>8</span><span>5</span>
-          <span>7</span><span>6</span><span></span>
-        </div>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="thumb-panel" aria-hidden="true">
-      <div class="timer-bars"><span></span><span></span><span></span></div>
-    </div>
-  `;
-}
-
-function normalize(value) {
-  return value.toLowerCase().trim();
-}
-
-function isVisible(app) {
-  const matchesFilter = currentFilter === "all" || app.category === currentFilter;
-  const haystack = normalize(
-    [app.title, app.description, app.categoryLabel, app.statusLabel, ...app.tags].join(" ")
-  );
-  return matchesFilter && haystack.includes(searchTerm);
-}
-
-function renderApps() {
-  const visibleApps = apps.filter(isVisible);
-  emptyState.hidden = visibleApps.length > 0;
-
-  grid.innerHTML = visibleApps
-    .map((app) => {
-      const disabled = app.status !== "ready";
-      const action = disabled
-        ? `<a class="launch-link" aria-disabled="true">준비중</a>`
-        : `<a class="launch-link" href="${app.app_url}" target="_blank" rel="noopener">실행하기</a>`;
-
-      return `
-        <article class="app-card">
-          <div class="app-thumb">${renderThumbnail(app.thumbnail)}</div>
-          <div class="app-content">
-            <div class="app-meta">
-              <span class="badge">${app.categoryLabel}</span>
-              <span class="badge ${app.status}">${app.statusLabel}</span>
-            </div>
-            <h2>${app.title}</h2>
-            <p>${app.description}</p>
-            <div class="tags" aria-label="태그">
-              ${app.tags.map((tag) => `<span>${tag}</span>`).join("")}
-            </div>
-            <div class="card-actions">${action}</div>
-          </div>
-        </article>
-      `;
-    })
+function renderList() {
+  appNameList.innerHTML = apps
+    .map(
+      (app, index) => `
+        <button
+          class="app-name-button ${index === selectedIndex ? "is-active" : ""}"
+          type="button"
+          data-index="${index}"
+          aria-current="${index === selectedIndex ? "true" : "false"}"
+        >
+          ${app.title}
+        </button>
+      `
+    )
     .join("");
 }
 
-function updateStats() {
-  totalCount.textContent = String(apps.length);
-  readyCount.textContent = String(apps.filter((app) => app.status === "ready").length);
+function renderDetail() {
+  const app = apps[selectedIndex];
+  const isReady = app.status === "ready" && app.app_url;
+
+  detailMeta.innerHTML = `
+    <span class="badge">${app.categoryLabel}</span>
+    <span class="badge ${app.status}">${app.statusLabel}</span>
+  `;
+  detailTitle.textContent = app.title;
+  detailDescription.textContent = app.description;
+  detailTags.innerHTML = app.tags.map((tag) => `<span>${tag}</span>`).join("");
+
+  if (isReady) {
+    goLink.textContent = "go";
+    goLink.href = app.app_url;
+    goLink.setAttribute("aria-label", `${app.title} 열기`);
+    goLink.removeAttribute("aria-disabled");
+  } else {
+    goLink.textContent = "soon";
+    goLink.removeAttribute("href");
+    goLink.setAttribute("aria-label", `${app.title} 준비중`);
+    goLink.setAttribute("aria-disabled", "true");
+  }
 }
 
-searchInput.addEventListener("input", (event) => {
-  searchTerm = normalize(event.target.value);
-  renderApps();
+function selectApp(index) {
+  selectedIndex = index;
+  renderList();
+  renderDetail();
+}
+
+appNameList.addEventListener("click", (event) => {
+  const button = event.target.closest(".app-name-button");
+  if (!button) return;
+  selectApp(Number(button.dataset.index));
 });
 
-filterButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    currentFilter = button.dataset.filter;
-    filterButtons.forEach((item) => item.classList.toggle("is-active", item === button));
-    renderApps();
-  });
-});
-
-updateStats();
-renderApps();
+renderList();
+renderDetail();

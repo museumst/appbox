@@ -12,35 +12,21 @@
   </head>
   <body>
     <main class="app-shell">
-      <section class="catalog-header" aria-labelledby="page-title">
-        <div>
-          <p class="eyebrow">Appbox</p>
-          <h1 id="page-title">바이브코딩 앱 모음</h1>
-          <p class="intro">
-            브라우저에서 바로 실행되는 작은 도구와 게임을 모아 둔 페이지입니다.
-          </p>
-        </div>
-        <div class="header-stats" aria-label="앱 현황">
-          <span><strong id="total-count">0</strong>개 앱</span>
-          <span><strong id="ready-count">0</strong>개 실행 가능</span>
-        </div>
+      <section class="app-list-pane" aria-labelledby="page-title">
+        <p class="eyebrow">Appbox</p>
+        <h1 id="page-title">바이브코딩 앱 모음</h1>
+        <nav class="app-name-list" id="app-name-list" aria-label="앱 목록"></nav>
       </section>
 
-      <section class="toolbar" aria-label="앱 필터">
-        <label class="search-field">
-          <span>검색</span>
-          <input id="search-input" type="search" placeholder="앱 이름, 설명, 태그 검색" />
-        </label>
-        <div class="filters" role="group" aria-label="카테고리 선택">
-          <button class="filter-button is-active" type="button" data-filter="all">전체</button>
-          <button class="filter-button" type="button" data-filter="tool">도구</button>
-          <button class="filter-button" type="button" data-filter="game">게임</button>
-          <button class="filter-button" type="button" data-filter="coming-soon">준비중</button>
+      <section class="app-detail-pane" id="app-detail-pane" aria-live="polite">
+        <div class="detail-copy">
+          <div class="app-meta" id="detail-meta"></div>
+          <h2 id="detail-title"></h2>
+          <p id="detail-description"></p>
+          <div class="tags" id="detail-tags" aria-label="태그"></div>
         </div>
+        <a class="go-link" id="go-link" target="_blank" rel="noopener">go</a>
       </section>
-
-      <section class="catalog-grid" id="catalog-grid" aria-live="polite"></section>
-      <p class="empty-state" id="empty-state" hidden>조건에 맞는 앱이 없습니다.</p>
     </main>
 
     <script src="assets/app-catalog.js"></script>
