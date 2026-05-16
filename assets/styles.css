@@ -217,6 +217,78 @@ h1 {
   font-size: clamp(1.8rem, 5vw, 3rem);
 }
 
+.lotto-panel {
+  max-width: 720px;
+}
+
+.lotto-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 24px 0 0;
+}
+
+.lotto-controls label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.lotto-controls select {
+  min-height: 42px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.lotto-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+}
+
+.lotto-stat-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.lotto-stat-table caption {
+  padding: 10px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.lotto-stat-table.hot caption {
+  background: #f9d86a;
+}
+
+.lotto-stat-table.cold caption {
+  background: #c7b8ff;
+}
+
+.lotto-stat-table th,
+.lotto-stat-table td {
+  padding: 8px 10px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+}
+
+.lotto-stat-table th {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .number-output {
   /* 로또번호 생성기 결과 숫자 영역 */
   display: grid;
@@ -225,22 +297,65 @@ h1 {
   margin: 24px 0;
 }
 
-.number-output span {
+.number-output button {
   display: grid;
   aspect-ratio: 1;
   place-items: center;
   border-radius: 50%;
-  border: 1px solid var(--line);
+  border: 2px solid transparent;
   background: var(--surface-strong);
   color: var(--muted);
+  cursor: pointer;
+  font: inherit;
   font-weight: 700;
 }
 
-.number-output span.is-picked {
-  background: var(--accent);
-  color: #fff;
+.number-output button.is-hot {
+  background: #f9d86a;
+  color: var(--text);
+}
+
+.number-output button.is-cold {
+  background: #c7b8ff;
+  color: var(--text);
+}
+
+.number-output button.is-picked {
+  box-shadow: 0 0 0 3px rgba(32, 33, 36, 0.72);
   border-color: var(--accent);
   font-weight: 900;
+}
+
+.selected-lotto {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.selected-title,
+.save-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.selected-numbers {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--surface-strong);
+  color: var(--text);
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.selected-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .primary-button {
@@ -253,6 +368,22 @@ h1 {
   color: #fff;
   font-weight: 800;
   cursor: pointer;
+}
+
+.secondary-button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 14px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.secondary-button:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 
 .tile-grid {
@@ -330,6 +461,11 @@ h1 {
   .app-list-pane,
   .app-detail-pane {
     padding: 24px;
+  }
+
+  .lotto-controls,
+  .lotto-stats {
+    grid-template-columns: 1fr;
   }
 
   .go-link {

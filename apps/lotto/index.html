@@ -4,38 +4,240 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>로또번호 생성기</title>
-    <link rel="stylesheet" href="../../assets/styles.css?v=20260516-lotto-grid" />
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260516-lotto-stats" />
   </head>
   <body class="mini-app">
-    <main class="mini-app-panel">
+    <main class="mini-app-panel lotto-panel">
       <p class="eyebrow">Tool</p>
       <h1>로또번호 생성기</h1>
-      <div class="number-output" id="numbers" aria-live="polite"></div>
+
+      <div class="lotto-controls" aria-label="로또 번호 생성 조건">
+        <label>
+          <span>최근</span>
+          <select id="period-select"></select>
+        </label>
+        <label>
+          <span>노란색</span>
+          <select id="hot-count-select"></select>
+        </label>
+        <label>
+          <span>보라색</span>
+          <select id="cold-count-select"></select>
+        </label>
+      </div>
+
+      <div class="lotto-stats" aria-label="최근 당첨번호 통계">
+        <table class="lotto-stat-table hot">
+          <caption>가장 많이 나온 숫자</caption>
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>횟수</th>
+            </tr>
+          </thead>
+          <tbody id="hot-table"></tbody>
+        </table>
+        <table class="lotto-stat-table cold">
+          <caption>가장 적게 나온 숫자</caption>
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>횟수</th>
+            </tr>
+          </thead>
+          <tbody id="cold-table"></tbody>
+        </table>
+      </div>
+
+      <div class="number-output" id="numbers" aria-label="번호판"></div>
+
+      <section class="selected-lotto" aria-live="polite">
+        <p class="selected-title">SELECTED</p>
+        <div class="selected-numbers" id="selected-numbers"></div>
+        <div class="selected-actions">
+          <button class="secondary-button" type="button" id="copy-button">COPY</button>
+          <button class="secondary-button" type="button" id="save-button">SAVE</button>
+        </div>
+        <p class="save-status" id="save-status"></p>
+      </section>
+
       <button class="primary-button" type="button" id="generate-button">NEW</button>
     </main>
     <script>
       const output = document.querySelector("#numbers");
-      const button = document.querySelector("#generate-button");
+      const generateButton = document.querySelector("#generate-button");
+      const periodSelect = document.querySelector("#period-select");
+      const hotCountSelect = document.querySelector("#hot-count-select");
+      const coldCountSelect = document.querySelector("#cold-count-select");
+      const hotTable = document.querySelector("#hot-table");
+      const coldTable = document.querySelector("#cold-table");
+      const selectedNumbers = document.querySelector("#selected-numbers");
+      const copyButton = document.querySelector("#copy-button");
+      const saveButton = document.querySelector("#save-button");
+      const saveStatus = document.querySelector("#save-status");
 
-      function generateNumbers() {
-        const pool = Array.from({ length: 45 }, (_, index) => index + 1);
-        const picked = [];
+      const state = {
+        draws: [],
+        period: 52,
+        hotNumbers: [],
+        coldNumbers: [],
+        selected: new Set(),
+      };
 
-        while (picked.length < 6) {
-          const index = Math.floor(Math.random() * pool.length);
-          picked.push(pool.splice(index, 1)[0]);
-        }
-
-        const pickedNumbers = new Set(picked);
-        output.innerHTML = Array.from({ length: 45 }, (_, index) => {
-          const number = index + 1;
-          const className = pickedNumbers.has(number) ? "is-picked" : "";
-          return `<span class="${className}">${number}</span>`;
+      function fillSelect(select, min, max, selectedValue, suffix = "") {
+        select.innerHTML = Array.from({ length: max - min + 1 }, (_, index) => {
+          const value = min + index;
+          const selected = value === selectedValue ? "selected" : "";
+          return `<option value="${value}" ${selected}>${value}${suffix}</option>`;
         }).join("");
       }
 
-      button.addEventListener("click", generateNumbers);
-      generateNumbers();
+      function countNumbers(draws) {
+        const counts = new Map(Array.from({ length: 45 }, (_, index) => [index + 1, 0]));
+        draws.forEach((draw) => {
+          draw.numbers.forEach((number) => counts.set(number, counts.get(number) + 1));
+        });
+        return [...counts.entries()].map(([number, count]) => ({ number, count }));
+      }
+
+      function calculateStats() {
+        const recentDraws = state.draws.slice(0, state.period);
+        const counts = countNumbers(recentDraws);
+        state.hotNumbers = [...counts]
+          .sort((a, b) => b.count - a.count || a.number - b.number)
+          .slice(0, 6);
+        state.coldNumbers = [...counts]
+          .sort((a, b) => a.count - b.count || a.number - b.number)
+          .slice(0, 6);
+      }
+
+      function renderStatTable(tbody, rows) {
+        tbody.innerHTML = rows
+          .map(
+            ({ number, count }) => `
+              <tr>
+                <td>${number}</td>
+                <td>${count}</td>
+              </tr>
+            `
+          )
+          .join("");
+      }
+
+      function renderBoard() {
+        const hotSet = new Set(state.hotNumbers.map(({ number }) => number));
+        const coldSet = new Set(state.coldNumbers.map(({ number }) => number));
+        output.innerHTML = Array.from({ length: 45 }, (_, index) => {
+          const number = index + 1;
+          const classes = [
+            hotSet.has(number) ? "is-hot" : "",
+            coldSet.has(number) ? "is-cold" : "",
+            state.selected.has(number) ? "is-picked" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+          return `<button class="${classes}" type="button" data-number="${number}" aria-pressed="${state.selected.has(number)}">${number}</button>`;
+        }).join("");
+      }
+
+      function renderSelected() {
+        const numbers = [...state.selected].sort((a, b) => a - b);
+        selectedNumbers.textContent = numbers.length ? numbers.join(", ") : "-";
+        copyButton.disabled = numbers.length === 0;
+        saveButton.disabled = numbers.length === 0;
+      }
+
+      function render() {
+        renderStatTable(hotTable, state.hotNumbers);
+        renderStatTable(coldTable, state.coldNumbers);
+        renderBoard();
+        renderSelected();
+      }
+
+      function pickRandom(source, count) {
+        const pool = [...source];
+        const picked = [];
+        while (picked.length < count && pool.length > 0) {
+          const index = Math.floor(Math.random() * pool.length);
+          picked.push(pool.splice(index, 1)[0]);
+        }
+        return picked;
+      }
+
+      function generateNumbers() {
+        const hotCount = Number(hotCountSelect.value);
+        const coldCount = Number(coldCountSelect.value);
+        const hotPool = state.hotNumbers.map(({ number }) => number);
+        const coldPool = state.coldNumbers.map(({ number }) => number);
+        const picked = [...pickRandom(hotPool, hotCount), ...pickRandom(coldPool, coldCount)];
+
+        state.selected = new Set(picked);
+        saveStatus.textContent = "";
+        renderBoard();
+        renderSelected();
+      }
+
+      function updateStats() {
+        state.period = Number(periodSelect.value);
+        calculateStats();
+        saveStatus.textContent = "";
+        render();
+      }
+
+      output.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-number]");
+        if (!button) return;
+        const number = Number(button.dataset.number);
+        if (state.selected.has(number)) {
+          state.selected.delete(number);
+        } else {
+          state.selected.add(number);
+        }
+        saveStatus.textContent = "";
+        renderBoard();
+        renderSelected();
+      });
+
+      generateButton.addEventListener("click", generateNumbers);
+      periodSelect.addEventListener("change", updateStats);
+
+      copyButton.addEventListener("click", async () => {
+        const text = [...state.selected].sort((a, b) => a - b).join(", ");
+        try {
+          await navigator.clipboard.writeText(text);
+          saveStatus.textContent = "Copied";
+        } catch {
+          saveStatus.textContent = "Copy failed";
+        }
+      });
+
+      saveButton.addEventListener("click", () => {
+        const saved = {
+          date: new Date().toISOString(),
+          period: state.period,
+          numbers: [...state.selected].sort((a, b) => a - b),
+        };
+        try {
+          localStorage.setItem("ashosho-lotto-selection", JSON.stringify(saved));
+          saveStatus.textContent = "Saved";
+        } catch {
+          saveStatus.textContent = "Save failed";
+        }
+      });
+
+      async function init() {
+        fillSelect(periodSelect, 1, 52, 52, "주");
+        fillSelect(hotCountSelect, 0, 6, 3, "개");
+        fillSelect(coldCountSelect, 0, 6, 3, "개");
+
+        const response = await fetch("lotto-history.json?v=20260516");
+        const history = await response.json();
+        state.draws = history.draws;
+        updateStats();
+        generateNumbers();
+      }
+
+      init();
     </script>
   </body>
 </html>
