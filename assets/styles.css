@@ -222,6 +222,7 @@ h1 {
 }
 
 .mini-app-panel h1 {
+  max-width: none;
   font-size: clamp(1.8rem, 5vw, 3rem);
 }
 
