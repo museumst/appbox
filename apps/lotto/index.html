@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>로또번호 생성기</title>
+    <link rel="stylesheet" href="../../assets/styles.css" />
+  </head>
+  <body class="mini-app">
+    <main class="mini-app-panel">
+      <p class="eyebrow">Tool</p>
+      <h1>로또번호 생성기</h1>
+      <p class="intro">1부터 45까지의 숫자 중 겹치지 않는 6개를 뽑습니다.</p>
+      <div class="number-output" id="numbers" aria-live="polite"></div>
+      <button class="primary-button" type="button" id="generate-button">다시 생성</button>
+    </main>
+    <script>
+      const output = document.querySelector("#numbers");
+      const button = document.querySelector("#generate-button");
+
+      function generateNumbers() {
+        const pool = Array.from({ length: 45 }, (_, index) => index + 1);
+        const picked = [];
+
+        while (picked.length < 6) {
+          const index = Math.floor(Math.random() * pool.length);
+          picked.push(pool.splice(index, 1)[0]);
+        }
+
+        picked.sort((a, b) => a - b);
+        output.innerHTML = picked.map((number) => `<span>${number}</span>`).join("");
+      }
+
+      button.addEventListener("click", generateNumbers);
+      generateNumbers();
+    </script>
+  </body>
+</html>

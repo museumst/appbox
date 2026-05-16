@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3x3 슬라이드 퍼즐</title>
+    <link rel="stylesheet" href="../../assets/styles.css" />
+  </head>
+  <body class="mini-app">
+    <main class="mini-app-panel">
+      <p class="eyebrow">Game</p>
+      <h1>3x3 슬라이드 퍼즐</h1>
+      <p class="intro">빈 칸과 맞닿은 타일을 눌러 1부터 8까지 순서대로 맞춥니다.</p>
+      <div class="tile-grid" id="tile-grid" aria-label="퍼즐 보드"></div>
+      <button class="primary-button" type="button" id="shuffle-button">섞기</button>
+    </main>
+    <script>
+      const grid = document.querySelector("#tile-grid");
+      const shuffleButton = document.querySelector("#shuffle-button");
+      let tiles = [1, 2, 3, 4, 5, 6, 7, 8, null];
+
+      function render() {
+        grid.innerHTML = tiles
+          .map((tile, index) => {
+            const label = tile === null ? "빈 칸" : `${tile}번 타일`;
+            const className = tile === null ? "empty" : "";
+            return `<button class="${className}" type="button" data-index="${index}" aria-label="${label}">${tile ?? ""}</button>`;
+          })
+          .join("");
+      }
+
+      function canMove(index) {
+        const emptyIndex = tiles.indexOf(null);
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        const emptyRow = Math.floor(emptyIndex / 3);
+        const emptyCol = emptyIndex % 3;
+        return Math.abs(row - emptyRow) + Math.abs(col - emptyCol) === 1;
+      }
+
+      function move(index) {
+        if (!canMove(index)) return;
+        const emptyIndex = tiles.indexOf(null);
+        [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+        render();
+      }
+
+      function shuffle() {
+        for (let i = 0; i < 80; i += 1) {
+          const movable = tiles
+            .map((tile, index) => (tile === null ? null : index))
+            .filter((index) => index !== null && canMove(index));
+          move(movable[Math.floor(Math.random() * movable.length)]);
+        }
+        render();
+      }
+
+      grid.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        move(Number(button.dataset.index));
+      });
+
+      shuffleButton.addEventListener("click", shuffle);
+      shuffle();
+    </script>
+  </body>
+</html>
