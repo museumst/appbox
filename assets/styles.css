@@ -579,6 +579,7 @@ h1 {
   grid-template-columns: repeat(4, minmax(64px, 1fr));
   gap: 8px;
   margin: 24px 0;
+  border-radius: 10px;
 }
 
 .tile-grid[data-grid-size="3"] {
@@ -620,6 +621,46 @@ h1 {
   /* 퍼즐에서 타일이 없는 빈 칸 */
   background: #ece1cc;
   color: transparent;
+}
+
+.tile-grid.is-complete {
+  animation: puzzle-complete-flash 680ms ease-out;
+}
+
+.tile-grid.is-complete button:not(.empty) {
+  animation: puzzle-tile-pop 420ms ease-out;
+}
+
+@keyframes puzzle-complete-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0);
+  }
+
+  35% {
+    box-shadow: 0 0 0 6px rgba(15, 118, 110, 0.28), 0 0 28px rgba(15, 118, 110, 0.24);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0);
+  }
+}
+
+@keyframes puzzle-tile-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.035);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile-grid.is-complete,
+  .tile-grid.is-complete button:not(.empty) {
+    animation: none;
+  }
 }
 
 @media (max-width: 860px) {

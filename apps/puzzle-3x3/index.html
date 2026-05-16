@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>3x3 Sliding Puzzle</title>
-    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-puzzle-stopwatch" />
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-puzzle-complete" />
   </head>
   <body class="mini-app">
     <main class="mini-app-panel">
@@ -121,6 +121,15 @@
         });
       }
 
+      function playCompleteEffect() {
+        grid.classList.remove("is-complete");
+        void grid.offsetWidth;
+        grid.classList.add("is-complete");
+        window.setTimeout(() => {
+          grid.classList.remove("is-complete");
+        }, 700);
+      }
+
       function renderRecords() {
         recordsPanel.hidden = !stopwatchMode;
         if (records.length === 0) {
@@ -190,11 +199,15 @@
         const emptyIndex = tiles.indexOf(null);
         [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
         render();
-        if (shouldTrack && stopwatchMode && isSolved()) stopStopwatch();
+        if (shouldTrack && isSolved()) {
+          playCompleteEffect();
+          if (stopwatchMode) stopStopwatch();
+        }
       }
 
       function shuffle() {
         resetStopwatch();
+        grid.classList.remove("is-complete");
         for (let i = 0; i < 90; i += 1) {
           const movable = tiles
             .map((tile, index) => (tile === null ? null : index))
