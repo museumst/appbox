@@ -219,20 +219,27 @@ h1 {
 
 .number-output {
   /* 로또번호 생성기 결과 숫자 영역 */
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 8px;
   margin: 24px 0;
 }
 
 .number-output span {
   display: grid;
-  width: 48px;
-  height: 48px;
+  aspect-ratio: 1;
   place-items: center;
   border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.number-output span.is-picked {
   background: var(--accent);
   color: #fff;
+  border-color: var(--accent);
   font-weight: 900;
 }
 
