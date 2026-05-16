@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>로또번호 생성기</title>
-    <link rel="stylesheet" href="../../assets/styles.css?v=20260516-lotto-stats" />
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-lotto-random-modes" />
   </head>
   <body class="mini-app">
     <main class="mini-app-panel lotto-panel">
@@ -22,7 +22,7 @@
         </label>
         <label>
           <span>보라색</span>
-          <select id="cold-count-select"></select>
+          <output id="cold-count-output">3개</output>
         </label>
       </div>
 
@@ -61,14 +61,18 @@
         <p class="save-status" id="save-status"></p>
       </section>
 
-      <button class="primary-button" type="button" id="generate-button">NEW</button>
+      <div class="lotto-random-actions">
+        <button class="primary-button" type="button" id="full-random-button">완전랜덤</button>
+        <button class="primary-button" type="button" id="condition-random-button">조건랜덤</button>
+      </div>
     </main>
     <script>
       const output = document.querySelector("#numbers");
-      const generateButton = document.querySelector("#generate-button");
+      const fullRandomButton = document.querySelector("#full-random-button");
+      const conditionRandomButton = document.querySelector("#condition-random-button");
       const periodSelect = document.querySelector("#period-select");
       const hotCountSelect = document.querySelector("#hot-count-select");
-      const coldCountSelect = document.querySelector("#cold-count-select");
+      const coldCountOutput = document.querySelector("#cold-count-output");
       const hotTable = document.querySelector("#hot-table");
       const coldTable = document.querySelector("#cold-table");
       const selectedNumbers = document.querySelector("#selected-numbers");
@@ -90,6 +94,15 @@
           const selected = value === selectedValue ? "selected" : "";
           return `<option value="${value}" ${selected}>${value}${suffix}</option>`;
         }).join("");
+      }
+
+      function getColdCount() {
+        return 6 - Number(hotCountSelect.value);
+      }
+
+      function updateColdCountOutput() {
+        coldCountOutput.value = `${getColdCount()}개`;
+        coldCountOutput.textContent = `${getColdCount()}개`;
       }
 
       function countNumbers(draws) {
@@ -164,9 +177,18 @@
         return picked;
       }
 
-      function generateNumbers() {
+      function generateFullRandom() {
+        const picked = pickRandom(Array.from({ length: 45 }, (_, index) => index + 1), 6);
+
+        state.selected = new Set(picked);
+        saveStatus.textContent = "";
+        renderBoard();
+        renderSelected();
+      }
+
+      function generateConditionRandom() {
         const hotCount = Number(hotCountSelect.value);
-        const coldCount = Number(coldCountSelect.value);
+        const coldCount = getColdCount();
         const hotPool = state.hotNumbers.map(({ number }) => number);
         const coldPool = state.coldNumbers.map(({ number }) => number);
         const picked = [...pickRandom(hotPool, hotCount), ...pickRandom(coldPool, coldCount)];
@@ -198,8 +220,13 @@
         renderSelected();
       });
 
-      generateButton.addEventListener("click", generateNumbers);
+      fullRandomButton.addEventListener("click", generateFullRandom);
+      conditionRandomButton.addEventListener("click", generateConditionRandom);
       periodSelect.addEventListener("change", updateStats);
+      hotCountSelect.addEventListener("change", () => {
+        updateColdCountOutput();
+        saveStatus.textContent = "";
+      });
 
       copyButton.addEventListener("click", async () => {
         const text = [...state.selected].sort((a, b) => a - b).join(", ");
@@ -228,13 +255,13 @@
       async function init() {
         fillSelect(periodSelect, 1, 52, 52, "주");
         fillSelect(hotCountSelect, 0, 6, 3, "개");
-        fillSelect(coldCountSelect, 0, 6, 3, "개");
+        updateColdCountOutput();
 
         const response = await fetch("lotto-history.json?v=20260516");
         const history = await response.json();
         state.draws = history.draws;
         updateStats();
-        generateNumbers();
+        generateConditionRandom();
       }
 
       init();

@@ -247,6 +247,18 @@ h1 {
   font: inherit;
 }
 
+.lotto-controls output {
+  display: grid;
+  min-height: 42px;
+  place-items: center start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  background: var(--surface-strong);
+  color: var(--text);
+  font: inherit;
+}
+
 .lotto-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -370,6 +382,12 @@ h1 {
   cursor: pointer;
 }
 
+.lotto-random-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .secondary-button {
   min-height: 40px;
   border: 1px solid var(--line);
@@ -466,6 +484,10 @@ h1 {
   .lotto-controls,
   .lotto-stats {
     grid-template-columns: 1fr;
+  }
+
+  .number-output {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .go-link {
