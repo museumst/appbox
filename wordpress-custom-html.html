@@ -1,0 +1,154 @@
+<!-- WordPress Custom HTML block snippet.
+Replace app_url values with each deployed static app URL, such as https://apps.example.com/lotto/.
+-->
+<div id="vibe-appbox"></div>
+<style>
+  #vibe-appbox {
+    --surface: #fff;
+    --text: #202124;
+    --muted: #626a73;
+    --line: #d9ded9;
+    --accent: #0f766e;
+    color: var(--text);
+    font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+
+  #vibe-appbox .vibe-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: end;
+    margin-bottom: 22px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  #vibe-appbox h2 {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    letter-spacing: 0;
+  }
+
+  #vibe-appbox p {
+    margin: 10px 0 0;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  #vibe-appbox .vibe-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  #vibe-appbox .vibe-card {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  #vibe-appbox .vibe-thumb {
+    min-height: 120px;
+    background: linear-gradient(135deg, #d9f1ec, #eef2ff 55%, #f8e7c4);
+  }
+
+  #vibe-appbox .vibe-body {
+    padding: 16px;
+  }
+
+  #vibe-appbox .vibe-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  #vibe-appbox .vibe-badge {
+    border-radius: 999px;
+    padding: 4px 8px;
+    background: #f2f4f5;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  #vibe-appbox h3 {
+    margin: 0;
+    font-size: 1.16rem;
+    letter-spacing: 0;
+  }
+
+  #vibe-appbox .vibe-link {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    margin-top: 16px;
+    border-radius: 8px;
+    padding: 0 14px;
+    background: var(--text);
+    color: #fff;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  @media (max-width: 760px) {
+    #vibe-appbox .vibe-header {
+      display: block;
+    }
+
+    #vibe-appbox .vibe-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+<script>
+  (() => {
+    const apps = [
+      {
+        title: "로또번호 생성기",
+        description: "겹치지 않는 6개 번호를 빠르게 뽑는 간단한 도구입니다.",
+        category: "도구",
+        app_url: "https://apps.example.com/lotto/",
+        status: "실행 가능",
+      },
+      {
+        title: "3x3 슬라이드 퍼즐",
+        description: "빈 칸을 이용해 숫자 타일을 맞추는 짧은 퍼즐게임입니다.",
+        category: "게임",
+        app_url: "https://apps.example.com/puzzle/",
+        status: "실행 가능",
+      },
+    ];
+
+    document.querySelector("#vibe-appbox").innerHTML = `
+      <section class="vibe-header">
+        <div>
+          <h2>바이브코딩 앱 모음</h2>
+          <p>브라우저에서 바로 실행되는 작은 도구와 게임을 모아 둔 페이지입니다.</p>
+        </div>
+      </section>
+      <section class="vibe-grid">
+        ${apps
+          .map(
+            (app) => `
+              <article class="vibe-card">
+                <div class="vibe-thumb" aria-hidden="true"></div>
+                <div class="vibe-body">
+                  <div class="vibe-meta">
+                    <span class="vibe-badge">${app.category}</span>
+                    <span class="vibe-badge">${app.status}</span>
+                  </div>
+                  <h3>${app.title}</h3>
+                  <p>${app.description}</p>
+                  <a class="vibe-link" href="${app.app_url}" target="_blank" rel="noopener">실행하기</a>
+                </div>
+              </article>
+            `
+          )
+          .join("")}
+      </section>
+    `;
+  })();
+</script>
