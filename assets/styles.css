@@ -239,6 +239,14 @@ h1 {
   margin: 24px 0;
 }
 
+.tile-grid[data-grid-size="3"] {
+  grid-template-columns: repeat(3, minmax(64px, 1fr));
+}
+
+.tile-grid + .primary-button {
+  width: 100%;
+}
+
 .tile-grid button {
   display: grid;
   aspect-ratio: 1;

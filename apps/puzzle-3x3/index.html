@@ -3,20 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>4x4 Sliding Puzzle</title>
+    <title>3x3 Sliding Puzzle</title>
     <link rel="stylesheet" href="../../assets/styles.css?v=20260516-puzzle-controls" />
   </head>
   <body class="mini-app">
     <main class="mini-app-panel">
       <p class="eyebrow">Game</p>
-      <h1>4x4 Sliding Puzzle</h1>
-      <div class="tile-grid" id="tile-grid" data-grid-size="4" aria-label="Puzzle board"></div>
+      <h1>3x3 Sliding Puzzle</h1>
+      <div class="tile-grid" id="tile-grid" data-grid-size="3" aria-label="Puzzle board"></div>
       <button class="primary-button" type="button" id="shuffle-button">NEW</button>
     </main>
     <script>
       const grid = document.querySelector("#tile-grid");
       const shuffleButton = document.querySelector("#shuffle-button");
-      const gridSize = 4;
+      const gridSize = 3;
       const tileImageVersion = "20260516-tile-09";
       let tiles = [...Array(gridSize * gridSize - 1).keys()].map((index) => index + 1).concat(null);
 
@@ -28,7 +28,7 @@
             const content =
               tile === null
                 ? ""
-                : `<img src="tiles/tile-${String(tile).padStart(2, "0")}.jpeg?v=${tileImageVersion}" alt="" draggable="false" />`;
+                : `<img src="../puzzle/tiles/tile-${String(tile).padStart(2, "0")}.jpeg?v=${tileImageVersion}" alt="" draggable="false" />`;
             return `<button class="${className}" type="button" data-index="${index}" aria-label="${label}">${content}</button>`;
           })
           .join("");
@@ -51,7 +51,7 @@
       }
 
       function shuffle() {
-        for (let i = 0; i < 160; i += 1) {
+        for (let i = 0; i < 90; i += 1) {
           const movable = tiles
             .map((tile, index) => (tile === null ? null : index))
             .filter((index) => index !== null && canMove(index));

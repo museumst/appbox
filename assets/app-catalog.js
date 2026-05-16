@@ -11,12 +11,23 @@ const apps = [
     tags: ["lotto", "random", "utility"],
   },
   {
-    title: "4x4 슬라이드 퍼즐",
-    description: "빈 칸을 이용해 1부터 15까지 숫자 타일을 맞추는 퍼즐게임입니다.",
+    title: "4x4 Sliding Puzzle",
+    description: "",
     category: "game",
     categoryLabel: "게임",
     thumbnail: "puzzle",
     app_url: "apps/puzzle/index.html",
+    status: "ready",
+    statusLabel: "실행 가능",
+    tags: ["puzzle", "game", "logic"],
+  },
+  {
+    title: "3x3 Sliding Puzzle",
+    description: "",
+    category: "game",
+    categoryLabel: "게임",
+    thumbnail: "puzzle",
+    app_url: "apps/puzzle-3x3/index.html",
     status: "ready",
     statusLabel: "실행 가능",
     tags: ["puzzle", "game", "logic"],
@@ -64,6 +75,7 @@ function renderDetail() {
 
   detailTitle.textContent = app.title;
   detailDescription.textContent = app.description;
+  detailDescription.hidden = !app.description;
 
   if (isReady) {
     goLink.textContent = "go";
