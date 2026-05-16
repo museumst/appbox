@@ -50,7 +50,7 @@ input {
   /* 메인 포털의 좌우 2분할 레이아웃 */
   display: grid;
   /* 첫 번째 값이 메뉴영역 폭, 두 번째 값이 오른쪽 상세영역 폭 */
-  grid-template-columns: minmax(180px, 13vw) minmax(0, 1fr);
+  grid-template-columns: minmax(180px, 16vw) minmax(0, 1fr);
   width: 100%;
   min-height: 100vh;
   margin: 0 auto;
