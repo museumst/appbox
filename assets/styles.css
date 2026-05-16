@@ -119,7 +119,7 @@ h1 {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 28px;
   padding: clamp(28px, 6vw, 84px);
   background:
