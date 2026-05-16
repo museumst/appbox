@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>4x4 슬라이드 퍼즐</title>
-    <link rel="stylesheet" href="../../assets/styles.css?v=20260516-4x4-puzzle" />
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260516-image-tiles" />
   </head>
   <body class="mini-app">
     <main class="mini-app-panel">
@@ -25,7 +25,11 @@
           .map((tile, index) => {
             const label = tile === null ? "빈 칸" : `${tile}번 타일`;
             const className = tile === null ? "empty" : "";
-            return `<button class="${className}" type="button" data-index="${index}" aria-label="${label}">${tile ?? ""}</button>`;
+            const content =
+              tile === null
+                ? ""
+                : `<img src="tiles/tile-${String(tile).padStart(2, "0")}.jpeg" alt="" draggable="false" />`;
+            return `<button class="${className}" type="button" data-index="${index}" aria-label="${label}">${content}</button>`;
           })
           .join("");
       }
