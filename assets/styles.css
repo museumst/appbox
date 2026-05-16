@@ -39,7 +39,7 @@ input {
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(260px, 34vw) minmax(0, 1fr);
+  grid-template-columns: minmax(180px, 22.67vw) minmax(0, 1fr);
   width: 100%;
   min-height: 100vh;
   margin: 0 auto;
@@ -97,7 +97,7 @@ h1 {
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: clamp(1.2rem, 2vw, 2rem);
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: 0;
   line-height: 1.22;
@@ -279,10 +279,6 @@ h1 {
   .app-list-pane,
   .app-detail-pane {
     padding: 24px;
-  }
-
-  .app-name-button {
-    font-size: 1.15rem;
   }
 
   .go-link {
