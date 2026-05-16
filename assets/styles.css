@@ -124,10 +124,7 @@ h1 {
 .app-name-button:focus-visible,
 .app-name-button.is-active {
   color: var(--text);
-  text-decoration: underline;
-  text-decoration-color: var(--accent);
-  text-decoration-thickness: 3px;
-  text-underline-offset: 7px;
+  text-decoration: none;
   outline: none;
 }
 
