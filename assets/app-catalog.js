@@ -11,8 +11,8 @@ const apps = [
     tags: ["lotto", "random", "utility"],
   },
   {
-    title: "3x3 슬라이드 퍼즐",
-    description: "빈 칸을 이용해 숫자 타일을 맞추는 짧은 퍼즐게임입니다.",
+    title: "4x4 슬라이드 퍼즐",
+    description: "빈 칸을 이용해 1부터 15까지 숫자 타일을 맞추는 퍼즐게임입니다.",
     category: "game",
     categoryLabel: "게임",
     thumbnail: "puzzle",

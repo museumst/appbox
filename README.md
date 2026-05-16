@@ -8,7 +8,7 @@
 - `assets/app-catalog.js`: 앱 카드 데이터와 검색/필터 로직
 - `assets/styles.css`: 포털과 샘플 앱 공용 스타일
 - `apps/lotto/index.html`: 샘플 로또번호 생성기
-- `apps/puzzle/index.html`: 샘플 3x3 슬라이드 퍼즐
+- `apps/puzzle/index.html`: 샘플 4x4 슬라이드 퍼즐
 - `wordpress-custom-html.html`: WordPress 커스텀 HTML 블록에 붙여 넣을 수 있는 포털 조각
 
 ## 사용 방법
