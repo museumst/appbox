@@ -50,7 +50,7 @@ input {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   border-right: 1px solid var(--line);
   padding: clamp(24px, 4vw, 56px);
   background: rgba(255, 255, 255, 0.72);
@@ -85,7 +85,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 48px;
+  margin-top: 0;
 }
 
 .app-name-button {
@@ -131,35 +131,6 @@ h1 {
   max-width: 760px;
 }
 
-.app-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 26px;
-  border-radius: 999px;
-  padding: 0 9px;
-  color: var(--muted);
-  background: #f2f4f5;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.badge.ready {
-  color: #07534d;
-  background: #d9f1ec;
-}
-
-.badge.coming-soon {
-  color: #784514;
-  background: #f8e7c4;
-}
-
 #detail-title {
   margin: 0;
   font-size: clamp(2.6rem, 7vw, 7.2rem);
@@ -173,22 +144,6 @@ h1 {
   color: var(--muted);
   font-size: clamp(1.1rem, 2vw, 1.7rem);
   line-height: 1.65;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  min-height: 28px;
-  margin-top: 24px;
-}
-
-.tags span {
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: #f4f4f1;
-  color: var(--muted);
-  font-size: 0.76rem;
 }
 
 .go-link {
@@ -312,7 +267,7 @@ h1 {
   }
 
   .app-name-list {
-    margin-top: 36px;
+    margin-top: 0;
   }
 
   .app-detail-pane {

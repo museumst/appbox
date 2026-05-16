@@ -35,10 +35,8 @@ const apps = [
 ];
 
 const appNameList = document.querySelector("#app-name-list");
-const detailMeta = document.querySelector("#detail-meta");
 const detailTitle = document.querySelector("#detail-title");
 const detailDescription = document.querySelector("#detail-description");
-const detailTags = document.querySelector("#detail-tags");
 const goLink = document.querySelector("#go-link");
 
 let selectedIndex = 0;
@@ -64,13 +62,8 @@ function renderDetail() {
   const app = apps[selectedIndex];
   const isReady = app.status === "ready" && app.app_url;
 
-  detailMeta.innerHTML = `
-    <span class="badge">${app.categoryLabel}</span>
-    <span class="badge ${app.status}">${app.statusLabel}</span>
-  `;
   detailTitle.textContent = app.title;
   detailDescription.textContent = app.description;
-  detailTags.innerHTML = app.tags.map((tag) => `<span>${tag}</span>`).join("");
 
   if (isReady) {
     goLink.textContent = "go";

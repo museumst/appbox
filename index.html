@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>GRAYROCKCLUB</title>
+    <title>grayrockclub</title>
     <meta
       name="description"
       content="로또번호 생성기, 퍼즐게임 같은 작은 바이브코딩 앱을 모아 둔 앱 포털"
@@ -12,17 +12,14 @@
   </head>
   <body>
     <main class="app-shell">
-      <section class="app-list-pane" aria-labelledby="page-title">
-        <h3 id="page-title">바이브코딩 앱 모음</h3>
+      <section class="app-list-pane" aria-label="앱 목록">
         <nav class="app-name-list" id="app-name-list" aria-label="앱 목록"></nav>
       </section>
 
       <section class="app-detail-pane" id="app-detail-pane" aria-live="polite">
         <div class="detail-copy">
-          <div class="app-meta" id="detail-meta"></div>
-          <h4 id="detail-title"></h4>
+          <h2 id="detail-title"></h2>
           <p id="detail-description"></p>
-          <div class="tags" id="detail-tags" aria-label="태그"></div>
         </div>
         <a class="go-link" id="go-link" target="_blank" rel="noopener">go</a>
       </section>
