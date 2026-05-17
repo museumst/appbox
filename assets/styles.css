@@ -535,11 +535,15 @@ h1 {
 }
 
 .lotto-stat-table.hot caption {
-  background: #f9d86a;
+  background: #fefce8;
+  color: #713f12;
+  border-bottom: 2px solid #eab308;
 }
 
 .lotto-stat-table.cold caption {
-  background: #c7b8ff;
+  background: #eef2ff;
+  color: #3730a3;
+  border-bottom: 2px solid #818cf8;
 }
 
 .lotto-stat-table th,
@@ -576,18 +580,18 @@ h1 {
 }
 
 .number-output button.is-hot {
-  background: #f9d86a;
-  color: var(--text);
+  background: #eab308;
+  color: #1c0a00;
 }
 
 .number-output button.is-cold {
-  background: #c7b8ff;
-  color: var(--text);
+  background: #818cf8;
+  color: #1e1b4b;
 }
 
 .number-output button.is-picked {
-  border-color: var(--text);
-  box-shadow: inset 0 0 0 2px var(--text);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
   font-weight: 900;
 }
 
