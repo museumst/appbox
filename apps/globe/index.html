@@ -18,6 +18,8 @@
       #globe-svg {
         position: fixed;
         top: 0; left: 0;
+        width: 100vw;
+        height: 100vh;
         cursor: grab;
         touch-action: none;
         user-select: none;
@@ -32,8 +34,8 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        padding: 20px 24px 64px;
-        background: linear-gradient(to bottom, rgba(248,250,252,0.95) 20%, rgba(248,250,252,0) 100%);
+        padding: 16px 20px 16px;
+        background: linear-gradient(to bottom, #f4f4f0 0%, rgba(244,244,240,0.9) 65%, transparent 100%);
         pointer-events: none;
       }
       .globe-header > * { pointer-events: auto; }
@@ -238,8 +240,7 @@
         state.scale = r;
 
         const svgEl = document.getElementById('globe-svg');
-        svgEl.setAttribute('width', w);
-        svgEl.setAttribute('height', h);
+        svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
 
         proj = d3.geoOrthographic()
           .scale(state.scale)
@@ -457,6 +458,18 @@
         document.getElementById('btn-quiz').textContent = state.quizMode ? '일반' : '퀴즈';
         document.getElementById('score-bar').hidden = !state.quizMode;
         updateScore();
+        draw();
+      });
+
+      window.addEventListener('resize', () => {
+        const nw = window.innerWidth, nh = window.innerHeight;
+        const prevRatio = state.scale / baseScale;
+        const r = Math.min(nw / 2, nh / 2) * 0.93;
+        baseScale = r;
+        state.scale = Math.max(r, Math.min(r * 8, r * prevRatio));
+        proj.scale(state.scale).translate([nw / 2, nh / 2]);
+        pathGen = d3.geoPath(proj);
+        document.getElementById('globe-svg').setAttribute('viewBox', `0 0 ${nw} ${nh}`);
         draw();
       });
 
