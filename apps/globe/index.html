@@ -11,7 +11,7 @@
         margin: 0; padding: 0;
         width: 100%; height: 100%;
         overflow: hidden;
-        background: #a8d8ea;
+        background: #f4f4f0;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
@@ -333,7 +333,7 @@
         d3.select('#g-sphere').selectAll('path')
           .data([{ type: 'Sphere' }]).join('path')
           .attr('d', pathGen)
-          .attr('fill', '#a8d8ea');
+          .attr('fill', '#4585b5');
 
         d3.select('#g-graticule').selectAll('path')
           .data([d3.geoGraticule()()])
