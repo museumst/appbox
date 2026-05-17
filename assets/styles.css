@@ -325,7 +325,7 @@ h1 {
 }
 
 .joseon-panel {
-  width: min(760px, 100%);
+  width: min(1040px, 100%);
 }
 
 .joseon-mnemonic {
@@ -351,135 +351,123 @@ h1 {
 
 .joseon-tree {
   margin: 22px 0 0;
+  overflow-x: auto;
+  padding: 8px 0 12px;
 }
 
 .family-tree,
-.family-children {
-  position: relative;
-  display: grid;
+.family-tree ol {
+  display: flex;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .family-tree {
-  gap: 18px;
+  width: max-content;
+  min-width: 100%;
+  justify-content: center;
+}
+
+.family-node {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
 }
 
 .family-children {
-  gap: 14px;
-  margin-top: 18px;
-  padding-top: 22px;
+  position: relative;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 22px 12px;
+  width: max-content;
+  max-width: 100%;
+  margin-top: 24px;
+  padding-top: 24px;
 }
 
-.family-children::before {
+.family-node.has-children > .family-children::before {
   content: "";
   position: absolute;
   top: 0;
   left: 50%;
   width: 2px;
-  height: 22px;
+  height: 24px;
   background: var(--line);
   transform: translateX(-50%);
-}
-
-.family-node {
-  position: relative;
-  display: grid;
-  justify-items: stretch;
 }
 
 .family-children > .family-node::before {
   content: "";
   position: absolute;
-  top: -22px;
+  top: -24px;
   left: 50%;
   width: 2px;
-  height: 22px;
+  height: 24px;
   background: var(--line);
   transform: translateX(-50%);
 }
 
-.king-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 12px;
-  background: var(--surface);
+.family-children > .family-node::after {
+  content: "";
+  position: absolute;
+  top: -24px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--line);
 }
 
-.king-card.is-ancestor {
-  background: var(--surface-strong);
+.family-children > .family-node:first-child::after {
+  left: 50%;
+  width: 50%;
+}
+
+.family-children > .family-node:last-child::after {
+  width: 50%;
+}
+
+.family-children > .family-node:only-child::after {
+  display: none;
+}
+
+.king-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 92px;
+  min-height: 54px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.king-card h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.15;
 }
 
 .king-order {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 24px;
+  height: 24px;
   place-items: center;
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
-  font-size: 0.96rem;
+  font-size: 0.74rem;
   font-weight: 900;
-}
-
-.king-order.is-ancestor {
-  background: #6b7280;
-}
-
-.king-copy {
-  min-width: 0;
-}
-
-.king-main {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  align-items: baseline;
-}
-
-.king-main h3 {
-  margin: 0;
-  color: var(--text);
-  font-size: 1.32rem;
-  line-height: 1.15;
-}
-
-.king-main span,
-.king-reign,
-.king-relation,
-.king-note {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.king-main span {
-  font-size: 0.88rem;
-  font-weight: 800;
-}
-
-.king-reign {
-  margin-top: 4px;
-  font-size: 0.84rem;
-  font-weight: 800;
-}
-
-.king-relation {
-  margin-top: 6px;
-  color: var(--text);
-  font-size: 0.92rem;
-  font-weight: 900;
-}
-
-.king-note {
-  margin-top: 2px;
-  font-size: 0.86rem;
 }
 
 .lotto-panel {

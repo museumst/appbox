@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>조선왕조 가계도</title>
-    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-joseon-family-lines" />
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-joseon-kings-only-tree" />
   </head>
   <body class="mini-app joseon-app">
     <main class="mini-app-panel joseon-panel">
@@ -12,351 +12,87 @@
       <h1>조선왕조 가계도</h1>
 
       <p class="joseon-mnemonic">태정태세문단세 예성연중인명선 광인효현숙경영 정순헌철고순</p>
-      <p class="joseon-guide">
-        수직선은 부자 관계입니다. 왕이 아니어도 왕의 아버지인 인물은 함께 표시했고, 계 표시는 중간 세대가 생략된 방계 연결입니다.
-      </p>
+      <p class="joseon-guide">왕만 표시했습니다. 왕이 아닌 중간 인물은 생략했으므로 일부 선은 직접 부자 관계가 아니라 왕실 계통 연결입니다.</p>
 
-      <section class="joseon-tree" aria-label="조선 왕조 부자 관계 가계도">
+      <section class="joseon-tree" aria-label="조선 왕조 왕 중심 가계도">
         <div id="joseon-tree"></div>
       </section>
     </main>
 
     <script>
-      const familyTree = [
+      const kings = [
         {
-          name: "태조",
           order: 1,
-          personal: "이성계",
-          reign: "1392-1398",
-          relation: "조선 개국 군주",
-          note: "정종과 태종의 아버지입니다.",
+          name: "태조",
           children: [
+            { order: 2, name: "정종" },
             {
-              name: "정종",
-              order: 2,
-              personal: "이방과",
-              reign: "1398-1400",
-              relation: "태조의 아들",
-              note: "태종의 형입니다.",
-            },
-            {
-              name: "태종",
               order: 3,
-              personal: "이방원",
-              reign: "1400-1418",
-              relation: "태조의 아들",
-              note: "세종의 아버지입니다.",
+              name: "태종",
               children: [
                 {
-                  name: "세종",
                   order: 4,
-                  personal: "이도",
-                  reign: "1418-1450",
-                  relation: "태종의 아들",
-                  note: "문종과 세조의 아버지입니다.",
+                  name: "세종",
                   children: [
                     {
-                      name: "문종",
                       order: 5,
-                      personal: "이향",
-                      reign: "1450-1452",
-                      relation: "세종의 아들",
-                      note: "단종의 아버지입니다.",
-                      children: [
-                        {
-                          name: "단종",
-                          order: 6,
-                          personal: "이홍위",
-                          reign: "1452-1455",
-                          relation: "문종의 아들",
-                          note: "숙부 세조에게 왕위를 빼앗겼습니다.",
-                        },
-                      ],
+                      name: "문종",
+                      children: [{ order: 6, name: "단종" }],
                     },
                     {
-                      name: "세조",
                       order: 7,
-                      personal: "이유",
-                      reign: "1455-1468",
-                      relation: "세종의 아들",
-                      note: "문종의 동생이자 단종의 숙부입니다.",
+                      name: "세조",
                       children: [
+                        { order: 8, name: "예종" },
                         {
-                          name: "예종",
-                          order: 8,
-                          personal: "이황",
-                          reign: "1468-1469",
-                          relation: "세조의 아들",
-                          note: "재위 기간이 짧았습니다.",
-                        },
-                        {
-                          name: "덕종",
-                          marker: "부",
-                          personal: "이장",
-                          reign: "추존왕",
-                          relation: "세조의 아들",
-                          note: "성종의 아버지입니다.",
+                          order: 9,
+                          name: "성종",
                           children: [
+                            { order: 10, name: "연산군" },
                             {
-                              name: "성종",
-                              order: 9,
-                              personal: "이혈",
-                              reign: "1469-1494",
-                              relation: "덕종의 아들",
-                              note: "예종의 조카입니다.",
+                              order: 11,
+                              name: "중종",
                               children: [
+                                { order: 12, name: "인종" },
+                                { order: 13, name: "명종" },
                                 {
-                                  name: "연산군",
-                                  order: 10,
-                                  personal: "이융",
-                                  reign: "1494-1506",
-                                  relation: "성종의 아들",
-                                  note: "중종의 이복형입니다.",
-                                },
-                                {
-                                  name: "중종",
-                                  order: 11,
-                                  personal: "이역",
-                                  reign: "1506-1544",
-                                  relation: "성종의 아들",
-                                  note: "반정으로 왕위에 올랐습니다.",
+                                  order: 14,
+                                  name: "선조",
                                   children: [
+                                    { order: 15, name: "광해군" },
                                     {
-                                      name: "인종",
-                                      order: 12,
-                                      personal: "이호",
-                                      reign: "1544-1545",
-                                      relation: "중종의 아들",
-                                      note: "명종의 이복형입니다.",
-                                    },
-                                    {
-                                      name: "명종",
-                                      order: 13,
-                                      personal: "이환",
-                                      reign: "1545-1567",
-                                      relation: "중종의 아들",
-                                      note: "인종의 이복동생입니다.",
-                                    },
-                                    {
-                                      name: "덕흥대원군",
-                                      marker: "부",
-                                      personal: "이초",
-                                      reign: "왕의 아버지",
-                                      relation: "중종의 아들",
-                                      note: "선조의 아버지입니다.",
+                                      order: 16,
+                                      name: "인조",
                                       children: [
                                         {
-                                          name: "선조",
-                                          order: 14,
-                                          personal: "이연",
-                                          reign: "1567-1608",
-                                          relation: "덕흥대원군의 아들",
-                                          note: "광해군과 원종의 아버지입니다.",
+                                          order: 17,
+                                          name: "효종",
                                           children: [
                                             {
-                                              name: "광해군",
-                                              order: 15,
-                                              personal: "이혼",
-                                              reign: "1608-1623",
-                                              relation: "선조의 아들",
-                                              note: "인조의 숙부 항렬입니다.",
-                                            },
-                                            {
-                                              name: "원종",
-                                              marker: "부",
-                                              personal: "이부",
-                                              reign: "추존왕",
-                                              relation: "선조의 아들",
-                                              note: "인조의 아버지입니다.",
+                                              order: 18,
+                                              name: "현종",
                                               children: [
                                                 {
-                                                  name: "인조",
-                                                  order: 16,
-                                                  personal: "이종",
-                                                  reign: "1623-1649",
-                                                  relation: "원종의 아들",
-                                                  note: "반정으로 왕위에 올랐습니다.",
+                                                  order: 19,
+                                                  name: "숙종",
                                                   children: [
+                                                    { order: 20, name: "경종" },
                                                     {
-                                                      name: "효종",
-                                                      order: 17,
-                                                      personal: "이호",
-                                                      reign: "1649-1659",
-                                                      relation: "인조의 아들",
-                                                      note: "현종의 아버지입니다.",
+                                                      order: 21,
+                                                      name: "영조",
                                                       children: [
                                                         {
-                                                          name: "현종",
-                                                          order: 18,
-                                                          personal: "이연",
-                                                          reign: "1659-1674",
-                                                          relation: "효종의 아들",
-                                                          note: "숙종의 아버지입니다.",
+                                                          order: 22,
+                                                          name: "정조",
                                                           children: [
                                                             {
-                                                              name: "숙종",
-                                                              order: 19,
-                                                              personal: "이순",
-                                                              reign: "1674-1720",
-                                                              relation: "현종의 아들",
-                                                              note: "경종과 영조의 아버지입니다.",
-                                                              children: [
-                                                                {
-                                                                  name: "경종",
-                                                                  order: 20,
-                                                                  personal: "이윤",
-                                                                  reign: "1720-1724",
-                                                                  relation: "숙종의 아들",
-                                                                  note: "영조의 이복형입니다.",
-                                                                },
-                                                                {
-                                                                  name: "영조",
-                                                                  order: 21,
-                                                                  personal: "이금",
-                                                                  reign: "1724-1776",
-                                                                  relation: "숙종의 아들",
-                                                                  note: "장조의 아버지입니다.",
-                                                                  children: [
-                                                                    {
-                                                                      name: "장조",
-                                                                      marker: "부",
-                                                                      personal: "이선",
-                                                                      reign: "추존왕",
-                                                                      relation: "영조의 아들",
-                                                                      note: "사도세자이며 정조와 은언군의 아버지입니다.",
-                                                                      children: [
-                                                                        {
-                                                                          name: "정조",
-                                                                          order: 22,
-                                                                          personal: "이산",
-                                                                          reign: "1776-1800",
-                                                                          relation: "장조의 아들",
-                                                                          note: "순조의 아버지입니다.",
-                                                                          children: [
-                                                                            {
-                                                                              name: "순조",
-                                                                              order: 23,
-                                                                              personal: "이공",
-                                                                              reign: "1800-1834",
-                                                                              relation: "정조의 아들",
-                                                                              note: "문조의 아버지입니다.",
-                                                                              children: [
-                                                                                {
-                                                                                  name: "문조",
-                                                                                  marker: "부",
-                                                                                  personal: "이영",
-                                                                                  reign: "추존왕",
-                                                                                  relation: "순조의 아들",
-                                                                                  note: "효명세자이며 헌종의 아버지입니다.",
-                                                                                  children: [
-                                                                                    {
-                                                                                      name: "헌종",
-                                                                                      order: 24,
-                                                                                      personal: "이환",
-                                                                                      reign: "1834-1849",
-                                                                                      relation: "문조의 아들",
-                                                                                      note: "후사가 없어 철종이 뒤를 이었습니다.",
-                                                                                    },
-                                                                                  ],
-                                                                                },
-                                                                              ],
-                                                                            },
-                                                                          ],
-                                                                        },
-                                                                        {
-                                                                          name: "은언군",
-                                                                          marker: "부",
-                                                                          personal: "이인",
-                                                                          reign: "왕실 종친",
-                                                                          relation: "장조의 아들",
-                                                                          note: "전계대원군의 아버지입니다.",
-                                                                          children: [
-                                                                            {
-                                                                              name: "전계대원군",
-                                                                              marker: "부",
-                                                                              personal: "이광",
-                                                                              reign: "왕의 아버지",
-                                                                              relation: "은언군의 아들",
-                                                                              note: "철종의 아버지입니다.",
-                                                                              children: [
-                                                                                {
-                                                                                  name: "철종",
-                                                                                  order: 25,
-                                                                                  personal: "이변",
-                                                                                  reign: "1849-1863",
-                                                                                  relation: "전계대원군의 아들",
-                                                                                  note: "강화도에서 왕위에 올랐습니다.",
-                                                                                },
-                                                                              ],
-                                                                            },
-                                                                          ],
-                                                                        },
-                                                                      ],
-                                                                    },
-                                                                  ],
-                                                                },
-                                                              ],
+                                                              order: 23,
+                                                              name: "순조",
+                                                              children: [{ order: 24, name: "헌종" }],
                                                             },
                                                           ],
                                                         },
-                                                      ],
-                                                    },
-                                                    {
-                                                      name: "인평대군",
-                                                      marker: "계",
-                                                      personal: "이요",
-                                                      reign: "왕실 종친",
-                                                      relation: "인조의 아들",
-                                                      note: "고종으로 이어지는 방계의 출발점입니다.",
-                                                      children: [
-                                                        {
-                                                          name: "중간 세대",
-                                                          marker: "계",
-                                                          personal: "생략",
-                                                          reign: "방계 연결",
-                                                          relation: "인평대군의 후손",
-                                                          note: "모바일 가독성을 위해 일부 세대를 접었습니다.",
-                                                          children: [
-                                                            {
-                                                              name: "남연군",
-                                                              marker: "부",
-                                                              personal: "이구",
-                                                              reign: "왕실 종친",
-                                                              relation: "인조계 방계",
-                                                              note: "흥선대원군의 아버지입니다.",
-                                                              children: [
-                                                                {
-                                                                  name: "흥선대원군",
-                                                                  marker: "부",
-                                                                  personal: "이하응",
-                                                                  reign: "왕의 아버지",
-                                                                  relation: "남연군의 아들",
-                                                                  note: "고종의 아버지입니다.",
-                                                                  children: [
-                                                                    {
-                                                                      name: "고종",
-                                                                      order: 26,
-                                                                      personal: "이재황",
-                                                                      reign: "1863-1907",
-                                                                      relation: "흥선대원군의 아들",
-                                                                      note: "순종의 아버지입니다.",
-                                                                      children: [
-                                                                        {
-                                                                          name: "순종",
-                                                                          order: 27,
-                                                                          personal: "이척",
-                                                                          reign: "1907-1910",
-                                                                          relation: "고종의 아들",
-                                                                          note: "조선 왕조의 마지막 군주입니다.",
-                                                                        },
-                                                                      ],
-                                                                    },
-                                                                  ],
-                                                                },
-                                                              ],
-                                                            },
-                                                          ],
-                                                        },
+                                                        { order: 25, name: "철종" },
                                                       ],
                                                     },
                                                   ],
@@ -364,6 +100,11 @@
                                               ],
                                             },
                                           ],
+                                        },
+                                        {
+                                          order: 26,
+                                          name: "고종",
+                                          children: [{ order: 27, name: "순종" }],
                                         },
                                       ],
                                     },
@@ -385,35 +126,25 @@
 
       const tree = document.querySelector("#joseon-tree");
 
-      function renderPerson(person) {
-        const isKing = Number.isInteger(person.order);
-        const badge = isKing ? person.order : person.marker;
-        const children = person.children || [];
+      function renderKing(king) {
+        const children = king.children || [];
 
         return `
           <li class="family-node ${children.length > 0 ? "has-children" : ""}">
-            <article class="king-card ${isKing ? "is-king" : "is-ancestor"}">
-              <span class="king-order ${isKing ? "" : "is-ancestor"}">${badge}</span>
-              <div class="king-copy">
-                <div class="king-main">
-                  <h3>${person.name}</h3>
-                  <span>${person.personal}</span>
-                </div>
-                <p class="king-reign">${isKing ? "재위" : "표시"} ${person.reign}</p>
-                <p class="king-relation">${person.relation}</p>
-                <p class="king-note">${person.note}</p>
-              </div>
+            <article class="king-card is-king">
+              <span class="king-order">${king.order}</span>
+              <h3>${king.name}</h3>
             </article>
             ${
               children.length
-                ? `<ol class="family-children">${children.map((child) => renderPerson(child)).join("")}</ol>`
+                ? `<ol class="family-children">${children.map((child) => renderKing(child)).join("")}</ol>`
                 : ""
             }
           </li>
         `;
       }
 
-      tree.innerHTML = `<ol class="family-tree">${familyTree.map((person) => renderPerson(person)).join("")}</ol>`;
+      tree.innerHTML = `<ol class="family-tree">${kings.map((king) => renderKing(king)).join("")}</ol>`;
     </script>
   </body>
 </html>
