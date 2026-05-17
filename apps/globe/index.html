@@ -230,6 +230,7 @@
       let baseScale = 0;
       let dragMoved = false;
       let pinchDist = null;
+      let hoveredId = null;
 
       async function init() {
         const w = window.innerWidth;
@@ -258,7 +259,7 @@
 
         svg.call(
           d3.drag()
-            .on('start', () => { dragMoved = false; })
+            .on('start', () => { dragMoved = false; hoveredId = null; })
             .on('drag', (ev) => {
               dragMoved = true;
               const sens = 0.4 * (baseScale / state.scale);
@@ -320,12 +321,14 @@
       }
 
       function countryFill(id) {
-        if (!state.quizMode) return '#2a6b5e';
+        if (!state.quizMode) {
+          return id === hoveredId ? '#3d8a72' : '#2a6b5e';
+        }
         if (state.activeId === id) return '#f59e0b';
         const ans = state.answered.get(id);
         if (ans === 'correct') return '#16a34a';
         if (ans === 'wrong') return '#dc2626';
-        return '#94a3b8';
+        return id === hoveredId ? '#7a8fa8' : '#94a3b8';
       }
 
       function draw() {
@@ -346,7 +349,19 @@
 
         d3.select('#g-countries').selectAll('path')
           .data(features, d => d.id)
-          .join('path')
+          .join(
+            enter => enter.append('path')
+              .on('mouseenter', (ev, d) => {
+                const id = +d.id;
+                if (!NAMES[id]) return;
+                hoveredId = id;
+                d3.select(ev.currentTarget).attr('fill', countryFill(id));
+              })
+              .on('mouseleave', (ev, d) => {
+                hoveredId = null;
+                d3.select(ev.currentTarget).attr('fill', countryFill(+d.id));
+              })
+          )
           .attr('d', pathGen)
           .attr('fill', d => countryFill(+d.id))
           .attr('stroke', 'rgba(255,255,255,0.6)')
