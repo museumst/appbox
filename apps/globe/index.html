@@ -175,6 +175,7 @@
       const state = {
         quizMode: false,
         rotation: [-127, -35],
+        scale: 0,
         answered: new Map(),
         activeId: null,
         score: { correct: 0, total: 0 },
@@ -182,7 +183,9 @@
 
       let features = [];
       let svg, proj, pathGen;
+      let baseScale = 0;
       let dragMoved = false;
+      let pinchDist = null;
 
       async function init() {
         const wrap = document.getElementById('globe-wrap');
@@ -190,13 +193,15 @@
         const h = Math.min(Math.round(w * 0.8), Math.round(window.innerHeight * 0.58));
         const cx = w / 2, cy = h / 2;
         const r = Math.min(cx, cy) * 0.93;
+        baseScale = r;
+        state.scale = r;
 
         const svgEl = document.getElementById('globe-svg');
         svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
         svgEl.style.height = h + 'px';
 
         proj = d3.geoOrthographic()
-          .scale(r)
+          .scale(state.scale)
           .translate([cx, cy])
           .rotate(state.rotation)
           .clipAngle(90);
@@ -214,10 +219,11 @@
             .on('start', () => { dragMoved = false; })
             .on('drag', (ev) => {
               dragMoved = true;
+              const sens = 0.4 * (baseScale / state.scale);
               const [λ, φ] = proj.rotate();
               proj.rotate([
-                λ + ev.dx * 0.4,
-                Math.max(-89, Math.min(89, φ - ev.dy * 0.4)),
+                λ + ev.dx * sens,
+                Math.max(-89, Math.min(89, φ - ev.dy * sens)),
               ]);
               state.rotation = proj.rotate();
               draw();
@@ -225,6 +231,40 @@
         );
 
         svg.on('click', onGlobeClick);
+
+        // Mouse wheel zoom
+        svgEl.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          const factor = e.deltaY > 0 ? 0.92 : 1.08;
+          state.scale = Math.max(baseScale, Math.min(baseScale * 8, state.scale * factor));
+          proj.scale(state.scale);
+          draw();
+        }, { passive: false });
+
+        // Pinch-to-zoom (touch)
+        svgEl.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 2) {
+            pinchDist = Math.hypot(
+              e.touches[0].clientX - e.touches[1].clientX,
+              e.touches[0].clientY - e.touches[1].clientY
+            );
+          }
+        }, { passive: true });
+
+        svgEl.addEventListener('touchmove', (e) => {
+          if (e.touches.length !== 2 || pinchDist === null) return;
+          e.preventDefault();
+          const newDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          state.scale = Math.max(baseScale, Math.min(baseScale * 8, state.scale * (newDist / pinchDist)));
+          proj.scale(state.scale);
+          pinchDist = newDist;
+          draw();
+        }, { passive: false });
+
+        svgEl.addEventListener('touchend', () => { pinchDist = null; });
 
         document.addEventListener('click', (e) => {
           if (!e.target.closest('#quiz-panel') && !e.target.closest('#globe-svg')) {
