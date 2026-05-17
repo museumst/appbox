@@ -32,17 +32,6 @@ const apps = [
     statusLabel: "실행 가능",
     tags: ["puzzle", "game", "logic"],
   },
-  {
-    title: "집중 타이머",
-    description: "짧은 몰입 세션과 휴식 시간을 기록하는 생산성 앱 예정작입니다.",
-    category: "coming-soon",
-    categoryLabel: "준비중",
-    thumbnail: "timer",
-    app_url: "",
-    status: "coming-soon",
-    statusLabel: "준비중",
-    tags: ["timer", "focus", "productivity"],
-  },
 ];
 
 const appNameList = document.querySelector("#app-name-list");
