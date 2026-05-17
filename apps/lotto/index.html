@@ -133,12 +133,18 @@
           .slice(0, 6);
       }
 
+      function circledNum(n) {
+        if (n <= 20) return String.fromCodePoint(0x245F + n);
+        if (n <= 35) return String.fromCodePoint(0x323C + n);
+        return String.fromCodePoint(0x328D + n);
+      }
+
       function renderStatTable(tbody, rows) {
         tbody.innerHTML = rows
           .map(
             ({ number, count }) => `
               <tr>
-                <td>${number}</td>
+                <td>${circledNum(number)}</td>
                 <td>${count}</td>
               </tr>
             `
