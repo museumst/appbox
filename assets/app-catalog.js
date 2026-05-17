@@ -33,6 +33,17 @@ const apps = [
     tags: ["puzzle", "game", "logic"],
   },
   {
+    title: "세계지도 퀴즈",
+    description: "지구본을 돌려가며 나라를 찾는 세계지도 퀴즈입니다. 일반 모드에서는 나라이름이 표시되고, 퀴즈 모드에서는 이름이 사라져 클릭으로 맞춰야 합니다.",
+    category: "game",
+    categoryLabel: "게임",
+    thumbnail: "globe",
+    app_url: "apps/globe/index.html",
+    status: "ready",
+    statusLabel: "실행 가능",
+    tags: ["geography", "quiz", "world", "globe"],
+  },
+  {
     title: "조선왕조 가계도",
     description: "조선 왕의 순서와 혈통 관계를 스마트폰에서 세로로 읽기 쉽게 정리한 가계도입니다.",
     category: "study",

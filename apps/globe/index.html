@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>세계지도 퀴즈</title>
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-globe" />
+    <style>
+      .globe-panel { padding-bottom: 0; }
+
+      .globe-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .globe-header h1 { margin: 0; }
+      .globe-header .eyebrow { margin-bottom: 4px; }
+
+      #score-bar {
+        font-size: 13px;
+        color: var(--muted, #888);
+        padding: 6px 0 2px;
+      }
+      #score-bar strong { color: var(--text, #1a1a1a); }
+
+      .globe-wrap {
+        margin: 16px -24px 0;
+        background: #a8d8ea;
+        overflow: hidden;
+      }
+
+      #globe-svg {
+        display: block;
+        width: 100%;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+      }
+      #globe-svg:active { cursor: grabbing; }
+
+      .country-label {
+        font-size: 9px;
+        fill: white;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        font-weight: 700;
+        pointer-events: none;
+        paint-order: stroke fill;
+      }
+
+      .bottom-panel {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: var(--surface, white);
+        border-top: 1px solid #d0dbd8;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -6px 28px rgba(0,0,0,0.12);
+        transform: translateY(100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 200;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .bottom-panel.open { transform: translateY(0); }
+
+      .panel-handle {
+        width: 36px; height: 4px; background: #ccc;
+        border-radius: 2px; margin: 16px auto 0;
+      }
+
+      .quiz-inner { padding: 20px 20px 36px; }
+      .quiz-question {
+        font-size: 0.88rem; font-weight: 700;
+        color: var(--muted, #888); margin: 0 0 14px;
+        text-align: center;
+      }
+      .quiz-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .quiz-choice {
+        padding: 14px 8px; border-radius: 10px;
+        border: 2px solid #d0dbd8; background: white;
+        font-size: 1rem; font-weight: 700; color: #1a3a32;
+        cursor: pointer; transition: border-color 0.12s, background 0.12s;
+      }
+      .quiz-choice:hover:not(:disabled) { border-color: #2a6b5e; background: #e8f4f2; }
+      .quiz-choice.correct { border-color: #2a6b5e; background: #d4ede8; color: #1a4a3a; }
+      .quiz-choice.wrong { border-color: #d63c3c; background: #fde8e8; color: #7a1a1a; }
+      .quiz-choice:disabled { cursor: default; }
+    </style>
+  </head>
+  <body class="mini-app">
+    <main class="mini-app-panel globe-panel">
+      <div class="globe-header">
+        <div>
+          <p class="eyebrow">Game</p>
+          <h1>세계지도 퀴즈</h1>
+        </div>
+        <button class="primary-button" id="btn-quiz" type="button">퀴즈</button>
+      </div>
+
+      <div id="score-bar" hidden>
+        맞힌 나라: <strong id="score-display">0 / 0</strong>
+      </div>
+
+      <div class="globe-wrap" id="globe-wrap">
+        <svg id="globe-svg"></svg>
+      </div>
+
+      <div class="bottom-panel" id="quiz-panel" role="dialog" aria-modal="true" aria-label="퀴즈">
+        <div class="panel-handle"></div>
+        <div class="quiz-inner">
+          <p class="quiz-question">이 나라는 어디일까요?</p>
+          <div class="quiz-choices" id="quiz-choices"></div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+    <script>
+      const NAMES = {
+        // 아프리카
+        12: "알제리", 24: "앙골라", 72: "보츠와나",
+        108: "부룬디", 120: "카메룬", 140: "중앙아프리카공화국",
+        148: "차드", 174: "코모로", 178: "콩고", 180: "콩고민주공화국",
+        204: "베냉", 226: "적도기니", 231: "에티오피아", 232: "에리트레아",
+        262: "지부티", 266: "가봉", 270: "감비아", 288: "가나",
+        324: "기니", 384: "코트디부아르", 426: "레소토", 430: "라이베리아",
+        434: "리비아", 450: "마다가스카르", 454: "말라위", 466: "말리",
+        478: "모리타니아", 504: "모로코", 508: "모잠비크", 516: "나미비아",
+        562: "니제르", 566: "나이지리아", 624: "기니비사우", 646: "르완다",
+        686: "세네갈", 694: "시에라리온", 706: "소말리아",
+        710: "남아프리카공화국", 716: "짐바브웨", 728: "남수단", 729: "수단",
+        748: "에스와티니", 768: "토고", 788: "튀니지", 800: "우간다",
+        818: "이집트", 834: "탄자니아", 894: "잠비아",
+        // 아메리카
+        32: "아르헨티나", 68: "볼리비아", 76: "브라질",
+        124: "캐나다", 152: "칠레", 170: "콜롬비아", 188: "코스타리카",
+        192: "쿠바", 214: "도미니카공화국", 218: "에콰도르", 222: "엘살바도르",
+        304: "그린란드", 320: "과테말라", 328: "가이아나", 332: "아이티",
+        340: "온두라스", 388: "자메이카", 484: "멕시코", 558: "니카라과",
+        591: "파나마", 604: "페루", 740: "수리남",
+        840: "미국", 858: "우루과이", 862: "베네수엘라",
+        // 아시아
+        4: "아프가니스탄", 50: "방글라데시", 64: "부탄",
+        96: "브루나이", 116: "캄보디아", 144: "스리랑카",
+        156: "중국", 356: "인도", 360: "인도네시아", 364: "이란",
+        368: "이라크", 376: "이스라엘", 392: "일본", 398: "카자흐스탄",
+        400: "요르단", 408: "북한", 410: "대한민국", 414: "쿠웨이트",
+        418: "라오스", 422: "레바논", 458: "말레이시아",
+        496: "몽골", 512: "오만", 524: "네팔", 586: "파키스탄",
+        608: "필리핀", 634: "카타르", 682: "사우디아라비아",
+        702: "싱가포르", 704: "베트남", 760: "시리아",
+        762: "타지키스탄", 764: "태국", 784: "아랍에미리트",
+        792: "튀르키예", 795: "투르크메니스탄",
+        860: "우즈베키스탄", 887: "예멘",
+        // 유럽
+        8: "알바니아", 40: "오스트리아", 56: "벨기에",
+        70: "보스니아 헤르체고비나", 100: "불가리아", 112: "벨라루스",
+        191: "크로아티아", 196: "키프로스", 203: "체코",
+        208: "덴마크", 233: "에스토니아", 246: "핀란드",
+        250: "프랑스", 276: "독일", 300: "그리스",
+        348: "헝가리", 352: "아이슬란드", 372: "아일랜드",
+        380: "이탈리아", 428: "라트비아", 440: "리투아니아",
+        442: "룩셈부르크", 498: "몰도바", 499: "몬테네그로",
+        528: "네덜란드", 578: "노르웨이", 616: "폴란드",
+        620: "포르투갈", 642: "루마니아", 643: "러시아",
+        688: "세르비아", 703: "슬로바키아", 705: "슬로베니아",
+        724: "스페인", 752: "스웨덴", 756: "스위스",
+        804: "우크라이나", 807: "북마케도니아", 826: "영국",
+        // 오세아니아
+        36: "오스트레일리아", 242: "피지", 554: "뉴질랜드",
+        598: "파푸아뉴기니", 882: "사모아",
+      };
+
+      const state = {
+        quizMode: false,
+        rotation: [-127, -35],
+        answered: new Map(),
+        activeId: null,
+        score: { correct: 0, total: 0 },
+      };
+
+      let features = [];
+      let svg, proj, pathGen;
+      let dragMoved = false;
+
+      async function init() {
+        const wrap = document.getElementById('globe-wrap');
+        const w = wrap.clientWidth;
+        const h = Math.min(Math.round(w * 0.8), Math.round(window.innerHeight * 0.58));
+        const cx = w / 2, cy = h / 2;
+        const r = Math.min(cx, cy) * 0.93;
+
+        const svgEl = document.getElementById('globe-svg');
+        svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        svgEl.style.height = h + 'px';
+
+        proj = d3.geoOrthographic()
+          .scale(r)
+          .translate([cx, cy])
+          .rotate(state.rotation)
+          .clipAngle(90);
+
+        pathGen = d3.geoPath(proj);
+        svg = d3.select('#globe-svg');
+
+        svg.append('g').attr('id', 'g-sphere');
+        svg.append('g').attr('id', 'g-graticule');
+        svg.append('g').attr('id', 'g-countries');
+        svg.append('g').attr('id', 'g-labels');
+
+        svg.call(
+          d3.drag()
+            .on('start', () => { dragMoved = false; })
+            .on('drag', (ev) => {
+              dragMoved = true;
+              const [λ, φ] = proj.rotate();
+              proj.rotate([
+                λ + ev.dx * 0.4,
+                Math.max(-89, Math.min(89, φ - ev.dy * 0.4)),
+              ]);
+              state.rotation = proj.rotate();
+              draw();
+            })
+        );
+
+        svg.on('click', onGlobeClick);
+
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('#quiz-panel') && !e.target.closest('#globe-svg')) {
+            closePanel();
+          }
+        });
+
+        const world = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r => r.json());
+        features = topojson.feature(world, world.objects.countries).features;
+        draw();
+      }
+
+      function countryFill(id) {
+        if (!state.quizMode) return '#2a6b5e';
+        if (state.activeId === id) return '#f59e0b';
+        const ans = state.answered.get(id);
+        if (ans === 'correct') return '#16a34a';
+        if (ans === 'wrong') return '#dc2626';
+        return '#94a3b8';
+      }
+
+      function draw() {
+        d3.select('#g-sphere').selectAll('path')
+          .data([{ type: 'Sphere' }]).join('path')
+          .attr('d', pathGen)
+          .attr('fill', '#a8d8ea');
+
+        d3.select('#g-graticule').selectAll('path')
+          .data([d3.geoGraticule()()])
+          .join('path')
+          .attr('d', pathGen)
+          .attr('fill', 'none')
+          .attr('stroke', 'rgba(255,255,255,0.25)')
+          .attr('stroke-width', 0.5);
+
+        d3.select('#g-countries').selectAll('path')
+          .data(features, d => d.id)
+          .join('path')
+          .attr('d', pathGen)
+          .attr('fill', d => countryFill(+d.id))
+          .attr('stroke', 'rgba(255,255,255,0.6)')
+          .attr('stroke-width', 0.4);
+
+        const labelsG = d3.select('#g-labels');
+        if (state.quizMode) {
+          labelsG.selectAll('text').remove();
+        } else {
+          labelsG.selectAll('text')
+            .data(features.filter(f => NAMES[+f.id]), d => d.id)
+            .join('text')
+            .attr('class', 'country-label')
+            .attr('stroke', 'rgba(0,0,0,0.55)')
+            .attr('stroke-width', 2.5)
+            .each(function(d) {
+              const centroid = d3.geoCentroid(d);
+              const pos = proj(centroid);
+              const area = pathGen.area(d);
+              const visible = pos !== null && area > 150;
+              d3.select(this)
+                .style('display', visible ? null : 'none')
+                .attr('x', pos ? pos[0] : 0)
+                .attr('y', pos ? pos[1] : 0)
+                .text(NAMES[+d.id]);
+            });
+        }
+      }
+
+      function onGlobeClick(event) {
+        if (dragMoved) { dragMoved = false; return; }
+        const [mx, my] = d3.pointer(event);
+        const inv = proj.invert([mx, my]);
+        if (!inv) return;
+        const clicked = features.find(f => d3.geoContains(f, inv));
+        if (!clicked) return;
+        const id = +clicked.id;
+        if (!NAMES[id]) return;
+        if (!state.quizMode) return;
+        if (state.answered.has(id)) return;
+        state.activeId = id;
+        draw();
+        event.stopPropagation();
+        openQuizPanel(id);
+      }
+
+      function openQuizPanel(id) {
+        const correct = NAMES[id];
+        const pool = Object.values(NAMES).filter(n => n !== correct);
+        const wrong = [];
+        while (wrong.length < 3 && pool.length > 0) {
+          wrong.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+        }
+        const choices = [correct, ...wrong].sort(() => Math.random() - 0.5);
+
+        const el = document.getElementById('quiz-choices');
+        el.innerHTML = choices
+          .map(n => `<button class="quiz-choice" type="button">${n}</button>`)
+          .join('');
+
+        el.querySelectorAll('.quiz-choice').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            onAnswer(id, correct, btn.textContent, el);
+          });
+        });
+
+        document.getElementById('quiz-panel').classList.add('open');
+      }
+
+      function onAnswer(id, correct, chosen, el) {
+        const ok = chosen === correct;
+        el.querySelectorAll('.quiz-choice').forEach(btn => {
+          btn.disabled = true;
+          if (btn.textContent === correct) btn.classList.add('correct');
+          else if (btn.textContent === chosen && !ok) btn.classList.add('wrong');
+        });
+        state.answered.set(id, ok ? 'correct' : 'wrong');
+        state.score.total++;
+        if (ok) state.score.correct++;
+        updateScore();
+        draw();
+        setTimeout(() => { state.activeId = null; closePanel(); draw(); }, 1400);
+      }
+
+      function closePanel() {
+        document.getElementById('quiz-panel').classList.remove('open');
+        if (state.activeId !== null) { state.activeId = null; draw(); }
+      }
+
+      function updateScore() {
+        const { correct, total } = state.score;
+        document.getElementById('score-display').textContent = `${correct} / ${total}`;
+      }
+
+      document.getElementById('btn-quiz').addEventListener('click', () => {
+        state.quizMode = !state.quizMode;
+        state.answered.clear();
+        state.activeId = null;
+        state.score = { correct: 0, total: 0 };
+        closePanel();
+        document.getElementById('btn-quiz').textContent = state.quizMode ? '일반' : '퀴즈';
+        document.getElementById('score-bar').hidden = !state.quizMode;
+        updateScore();
+        draw();
+      });
+
+      init().catch(console.error);
+    </script>
+  </body>
+</html>
