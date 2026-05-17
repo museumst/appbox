@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>조선왕조 가계도</title>
-    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-joseon-svg" />
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260517-joseon-v3" />
     <style>
       .joseon-scroll {
         margin-top: 22px;
@@ -12,15 +12,22 @@
         -webkit-overflow-scrolling: touch;
         padding-bottom: 12px;
       }
-      #joseon-svg {
-        display: block;
-        margin: 0 auto;
+      #joseon-svg { display: block; margin: 0 auto; }
+      .tree-line { stroke: #9dbdb8; stroke-width: 1.5; fill: none; }
+      .joseon-legend {
+        display: flex;
+        gap: 20px;
+        margin-top: 14px;
+        font-size: 0.88rem;
+        color: var(--muted);
+        font-weight: 600;
       }
-      .tree-line {
-        stroke: #9dbdb8;
-        stroke-width: 1.5;
-        fill: none;
+      .legend-item { display: flex; align-items: center; gap: 6px; }
+      .legend-box {
+        width: 18px; height: 14px; border-radius: 3px; flex-shrink: 0;
       }
+      .legend-box.king { background: #2a6b5e; }
+      .legend-box.nonking { background: white; border: 1.5px solid #2a6b5e; }
     </style>
   </head>
   <body class="mini-app joseon-app">
@@ -29,99 +36,91 @@
       <h1>조선왕조 가계도</h1>
 
       <p class="joseon-mnemonic">태정태세문단세 예성연중인명선 광인효현숙경영 정순헌철고순</p>
-      <p class="joseon-guide">왕만 표시했습니다. 왕이 아닌 중간 인물은 생략했으므로 일부 선은 직접 부자 관계가 아니라 왕실 계통 연결입니다.</p>
+      <p class="joseon-guide">왕위에 오르지 않은 중간 인물은 흰색 박스로 표시했습니다. 이들은 직계 부자 관계를 명확히 하기 위해 포함되었습니다.</p>
 
-      <div class="joseon-scroll" role="img" aria-label="조선 왕조 왕 중심 가계도">
+      <div class="joseon-legend">
+        <div class="legend-item"><div class="legend-box king"></div> 왕</div>
+        <div class="legend-item"><div class="legend-box nonking"></div> 왕이 아닌 중간 인물</div>
+      </div>
+
+      <div class="joseon-scroll" role="img" aria-label="조선 왕조 가계도">
         <svg id="joseon-svg"></svg>
       </div>
     </main>
 
     <script>
+      // isKing: false → 흰색 박스 (비왕 중간 인물)
       const kings = [
-        {
-          order: 1, name: "태조",
-          children: [
-            { order: 2, name: "정종" },
-            {
-              order: 3, name: "태종",
-              children: [{
-                order: 4, name: "세종",
-                children: [
-                  {
-                    order: 5, name: "문종",
-                    children: [{ order: 6, name: "단종" }],
-                  },
-                  {
-                    order: 7, name: "세조",
-                    children: [
-                      { order: 8, name: "예종" },
-                      {
-                        order: 9, name: "성종",
-                        children: [
-                          { order: 10, name: "연산군" },
-                          {
-                            order: 11, name: "중종",
-                            children: [
-                              { order: 12, name: "인종" },
-                              { order: 13, name: "명종" },
-                              {
-                                order: 14, name: "선조",
-                                children: [
-                                  { order: 15, name: "광해군" },
-                                  {
-                                    order: 16, name: "인조",
-                                    children: [
-                                      {
-                                        order: 17, name: "효종",
-                                        children: [{
-                                          order: 18, name: "현종",
-                                          children: [{
-                                            order: 19, name: "숙종",
-                                            children: [
-                                              { order: 20, name: "경종" },
-                                              {
-                                                order: 21, name: "영조",
-                                                children: [
-                                                  {
-                                                    order: 22, name: "정조",
-                                                    children: [{
-                                                      order: 23, name: "순조",
-                                                      children: [{ order: 24, name: "헌종" }],
-                                                    }],
-                                                  },
-                                                  { order: 25, name: "철종" },
-                                                ],
-                                              },
-                                            ],
-                                          }],
-                                        }],
-                                      },
-                                      {
-                                        order: 26, name: "고종",
-                                        children: [{ order: 27, name: "순종" }],
-                                      },
-                                    ],
-                                  },
-                                ],
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              }],
-            },
-          ],
-        },
+        { order: 1, name: "태조", isKing: true, children: [
+          { order: 2, name: "정종", isKing: true },
+          { order: 3, name: "태종", isKing: true, children: [
+            { order: 4, name: "세종", isKing: true, children: [
+              { order: 5, name: "문종", isKing: true, children: [
+                { order: 6, name: "단종", isKing: true }
+              ]},
+              { order: 7, name: "세조", isKing: true, children: [
+                { order: 8, name: "예종", isKing: true },
+                { name: "덕종", isKing: false, children: [
+                  { order: 9, name: "성종", isKing: true, children: [
+                    { order: 10, name: "연산군", isKing: true },
+                    { order: 11, name: "중종", isKing: true, children: [
+                      { order: 12, name: "인종", isKing: true },
+                      { order: 13, name: "명종", isKing: true },
+                      { name: "덕흥대원군", isKing: false, children: [
+                        { order: 14, name: "선조", isKing: true, children: [
+                          { order: 15, name: "광해군", isKing: true },
+                          { name: "정원대원군", isKing: false, children: [
+                            { order: 16, name: "인조", isKing: true, children: [
+                              { order: 17, name: "효종", isKing: true, children: [
+                                { order: 18, name: "현종", isKing: true, children: [
+                                  { order: 19, name: "숙종", isKing: true, children: [
+                                    { order: 20, name: "경종", isKing: true },
+                                    { order: 21, name: "영조", isKing: true, children: [
+                                      { name: "사도세자", isKing: false, children: [
+                                        { order: 22, name: "정조", isKing: true, children: [
+                                          { order: 23, name: "순조", isKing: true, children: [
+                                            { name: "효명세자", isKing: false, children: [
+                                              { order: 24, name: "헌종", isKing: true }
+                                            ]}
+                                          ]}
+                                        ]},
+                                        { name: "은언군", isKing: false, children: [
+                                          { name: "전계대원군", isKing: false, children: [
+                                            { order: 25, name: "철종", isKing: true }
+                                          ]}
+                                        ]},
+                                        { name: "은신군", isKing: false, children: [
+                                          { name: "남연군", isKing: false, children: [
+                                            { name: "흥선대원군", isKing: false, children: [
+                                              { order: 26, name: "고종", isKing: true, children: [
+                                                { order: 27, name: "순종", isKing: true }
+                                              ]}
+                                            ]}
+                                          ]}
+                                        ]}
+                                      ]}
+                                    ]}
+                                  ]}
+                                ]}
+                              ]}
+                            ]}
+                          ]}
+                        ]}
+                      ]}
+                    ]}
+                  ]}
+                ]}
+              ]}
+            ]}
+          ]}
+        ]}
       ];
 
-      const BW = 72;   // box width
-      const BH = 44;   // box height
-      const GX = 10;   // horizontal gap between siblings
-      const GY = 52;   // vertical gap between levels
-      const PAD = 20;  // outer padding
+      const BW = 76;   // box width
+      const BH = 42;   // box height
+      const GX = 10;   // horizontal gap
+      const GY = 46;   // vertical gap
+      const PAD = 20;
 
       function measure(node) {
         const ch = node.children || [];
@@ -164,7 +163,6 @@
 
       const rowY = d => PAD + d * (BH + GY);
 
-      // Group: lines behind boxes
       const lineG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       svg.appendChild(lineG);
       const nodeG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -183,6 +181,7 @@
       nodes.forEach(n => {
         const x = n.cx - BW / 2;
         const y = rowY(n.depth);
+        const isKing = n.isKing !== false;
 
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('x', x);
@@ -190,32 +189,41 @@
         rect.setAttribute('width', BW);
         rect.setAttribute('height', BH);
         rect.setAttribute('rx', 6);
-        rect.setAttribute('fill', '#2a6b5e');
+        if (isKing) {
+          rect.setAttribute('fill', '#2a6b5e');
+          rect.setAttribute('stroke', 'none');
+        } else {
+          rect.setAttribute('fill', 'white');
+          rect.setAttribute('stroke', '#2a6b5e');
+          rect.setAttribute('stroke-width', '1.5');
+        }
         nodeG.appendChild(rect);
 
-        const order = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        order.setAttribute('x', n.cx);
-        order.setAttribute('y', y + BH * 0.36);
-        order.setAttribute('text-anchor', 'middle');
-        order.setAttribute('dominant-baseline', 'middle');
-        order.setAttribute('fill', 'rgba(255,255,255,0.75)');
-        order.setAttribute('font-size', '12');
-        order.setAttribute('font-weight', '400');
-        order.setAttribute('font-family', 'system-ui, sans-serif');
-        order.textContent = `${n.order}대`;
-        nodeG.appendChild(order);
+        if (isKing) {
+          const orderT = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          orderT.setAttribute('x', n.cx);
+          orderT.setAttribute('y', y + BH * 0.35);
+          orderT.setAttribute('text-anchor', 'middle');
+          orderT.setAttribute('dominant-baseline', 'middle');
+          orderT.setAttribute('fill', 'rgba(255,255,255,0.75)');
+          orderT.setAttribute('font-size', '12');
+          orderT.setAttribute('font-weight', '400');
+          orderT.setAttribute('font-family', 'system-ui, sans-serif');
+          orderT.textContent = `${n.order}대`;
+          nodeG.appendChild(orderT);
+        }
 
-        const name = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        name.setAttribute('x', n.cx);
-        name.setAttribute('y', y + BH * 0.72);
-        name.setAttribute('text-anchor', 'middle');
-        name.setAttribute('dominant-baseline', 'middle');
-        name.setAttribute('fill', '#ffffff');
-        name.setAttribute('font-size', '14');
-        name.setAttribute('font-weight', '400');
-        name.setAttribute('font-family', 'system-ui, sans-serif');
-        name.textContent = n.name;
-        nodeG.appendChild(name);
+        const nameT = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        nameT.setAttribute('x', n.cx);
+        nameT.setAttribute('y', isKing ? y + BH * 0.72 : y + BH * 0.54);
+        nameT.setAttribute('text-anchor', 'middle');
+        nameT.setAttribute('dominant-baseline', 'middle');
+        nameT.setAttribute('fill', isKing ? '#ffffff' : '#1a4a40');
+        nameT.setAttribute('font-size', '13');
+        nameT.setAttribute('font-weight', '400');
+        nameT.setAttribute('font-family', 'system-ui, sans-serif');
+        nameT.textContent = n.name;
+        nodeG.appendChild(nameT);
       });
     </script>
   </body>
