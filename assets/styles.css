@@ -80,13 +80,19 @@ input {
 }
 
 .language-control {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
   display: grid;
   gap: 8px;
-  margin: 0 0 24px;
+  width: 164px;
+  margin: 0;
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0;
+  text-align: left;
 }
 
 .language-control select {
@@ -100,6 +106,7 @@ input {
   font: inherit;
   font-size: 0.9rem;
   font-weight: 800;
+  box-shadow: var(--shadow);
 }
 
 h1 {
@@ -864,6 +871,12 @@ h1 {
 
 @media (max-width: 620px) {
   /* 작은 모바일 화면에서 좌우 여백과 go 크기를 조정 */
+  .language-control {
+    top: 16px;
+    right: 16px;
+    width: 148px;
+  }
+
   .app-list-pane,
   .app-detail-pane {
     padding: 24px;
