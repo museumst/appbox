@@ -74,6 +74,22 @@
       }
       #score-bar strong { color: #fff; font-weight: 700; }
 
+      .lang-select {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+      }
+      .lang-select:focus { outline: none; border-color: rgba(255,255,255,0.5); }
+      .lang-select option { background: #1a2035; color: white; }
+
       .quiz-btn {
         padding: 10px 20px;
         border: none;
@@ -143,10 +159,15 @@
 
     <header class="globe-header">
       <div class="header-left">
-        <h1>세계지도</h1>
+        <h1 id="globe-title">세계지도</h1>
       </div>
       <div class="header-right">
-        <div id="score-bar" hidden>맞힌 나라: <strong id="score-display">0 / 0</strong></div>
+        <div id="score-bar" hidden><span id="score-label">맞힌 나라</span>: <strong id="score-display">0 / 0</strong></div>
+        <select class="lang-select" id="lang-select">
+          <option value="ko">한국어</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+        </select>
         <button class="quiz-btn" id="btn-quiz" type="button">퀴즈</button>
       </div>
     </header>
@@ -154,7 +175,7 @@
     <div class="bottom-panel" id="quiz-panel" role="dialog" aria-modal="true" aria-label="퀴즈">
       <div class="panel-handle"></div>
       <div class="quiz-inner">
-        <p class="quiz-question">이 나라는 어디일까요?</p>
+        <p class="quiz-question" id="quiz-question">이 나라는 어디일까요?</p>
         <div class="quiz-choices" id="quiz-choices"></div>
       </div>
     </div>
@@ -162,8 +183,7 @@
     <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
     <script>
-      const NAMES = {
-        // 아프리카
+      const NAMES_KO = {
         12: "알제리", 24: "앙골라", 72: "보츠와나",
         108: "부룬디", 120: "카메룬", 140: "중앙아프리카공화국",
         148: "차드", 174: "코모로", 178: "콩고", 180: "콩고민주공화국",
@@ -178,15 +198,13 @@
         748: "에스와티니", 768: "토고", 788: "튀니지", 800: "우간다",
         818: "이집트", 834: "탄자니아", 854: "부르키나파소", 894: "잠비아",
         9002: "소말릴란드",
-        // 아메리카
         32: "아르헨티나", 68: "볼리비아", 76: "브라질",
         124: "캐나다", 152: "칠레", 170: "콜롬비아", 188: "코스타리카",
         192: "쿠바", 214: "도미니카공화국", 218: "에콰도르", 222: "엘살바도르",
-        304: "그린란드", 320: "과테말라", 328: "가이아나", 332: "아이티",
+        254: "프랑스령 기아나", 304: "그린란드", 320: "과테말라", 328: "가이아나", 332: "아이티",
         340: "온두라스", 388: "자메이카", 484: "멕시코", 558: "니카라과",
-        254: "프랑스령 기아나", 591: "파나마", 600: "파라과이", 604: "페루", 740: "수리남",
+        591: "파나마", 600: "파라과이", 604: "페루", 740: "수리남",
         840: "미국", 858: "우루과이", 862: "베네수엘라",
-        // 아시아
         4: "아프가니스탄", 50: "방글라데시", 64: "부탄",
         96: "브루나이", 104: "미얀마", 116: "캄보디아", 144: "스리랑카",
         156: "중국", 356: "인도", 360: "인도네시아", 364: "이란",
@@ -197,26 +215,132 @@
         608: "필리핀", 634: "카타르", 682: "사우디아라비아",
         702: "싱가포르", 704: "베트남", 760: "시리아",
         762: "타지키스탄", 764: "태국", 784: "아랍에미리트",
-        792: "튀르키예", 795: "투르크메니스탄",
-        860: "우즈베키스탄", 887: "예멘",
-        // 유럽
+        792: "튀르키예", 795: "투르크메니스탄", 860: "우즈베키스탄", 887: "예멘",
         8: "알바니아", 31: "아제르바이잔", 40: "오스트리아", 51: "아르메니아", 56: "벨기에",
         70: "보스니아 헤르체고비나", 100: "불가리아", 112: "벨라루스",
         191: "크로아티아", 196: "키프로스", 203: "체코",
         208: "덴마크", 233: "에스토니아", 246: "핀란드",
-        250: "프랑스", 276: "독일", 300: "그리스",
+        250: "프랑스", 268: "조지아", 276: "독일", 300: "그리스",
         348: "헝가리", 352: "아이슬란드", 372: "아일랜드",
         380: "이탈리아", 428: "라트비아", 440: "리투아니아",
-        268: "조지아", 442: "룩셈부르크", 498: "몰도바", 499: "몬테네그로",
+        442: "룩셈부르크", 498: "몰도바", 499: "몬테네그로",
         528: "네덜란드", 578: "노르웨이", 616: "폴란드",
         620: "포르투갈", 642: "루마니아", 643: "러시아",
-        9001: "코소보", 688: "세르비아", 703: "슬로바키아", 705: "슬로베니아",
+        688: "세르비아", 703: "슬로바키아", 705: "슬로베니아",
         724: "스페인", 752: "스웨덴", 756: "스위스",
-        804: "우크라이나", 807: "북마케도니아", 826: "영국",
-        // 오세아니아
+        804: "우크라이나", 807: "북마케도니아", 826: "영국", 9001: "코소보",
         36: "오스트레일리아", 242: "피지", 554: "뉴질랜드",
         598: "파푸아뉴기니", 882: "사모아",
       };
+
+      const NAMES_EN = {
+        12: "Algeria", 24: "Angola", 72: "Botswana",
+        108: "Burundi", 120: "Cameroon", 140: "Central African Rep.",
+        148: "Chad", 174: "Comoros", 178: "Rep. of Congo", 180: "DR Congo",
+        204: "Benin", 226: "Equatorial Guinea", 231: "Ethiopia", 232: "Eritrea",
+        262: "Djibouti", 266: "Gabon", 270: "Gambia", 288: "Ghana",
+        324: "Guinea", 384: "Ivory Coast", 404: "Kenya", 426: "Lesotho", 430: "Liberia",
+        434: "Libya", 450: "Madagascar", 454: "Malawi", 466: "Mali",
+        478: "Mauritania", 504: "Morocco", 508: "Mozambique", 516: "Namibia",
+        562: "Niger", 566: "Nigeria", 624: "Guinea-Bissau", 646: "Rwanda",
+        686: "Senegal", 694: "Sierra Leone", 706: "Somalia",
+        710: "South Africa", 716: "Zimbabwe", 728: "South Sudan", 729: "Sudan",
+        748: "Eswatini", 768: "Togo", 788: "Tunisia", 800: "Uganda",
+        818: "Egypt", 834: "Tanzania", 854: "Burkina Faso", 894: "Zambia",
+        9002: "Somaliland",
+        32: "Argentina", 68: "Bolivia", 76: "Brazil",
+        124: "Canada", 152: "Chile", 170: "Colombia", 188: "Costa Rica",
+        192: "Cuba", 214: "Dominican Rep.", 218: "Ecuador", 222: "El Salvador",
+        254: "French Guiana", 304: "Greenland", 320: "Guatemala", 328: "Guyana", 332: "Haiti",
+        340: "Honduras", 388: "Jamaica", 484: "Mexico", 558: "Nicaragua",
+        591: "Panama", 600: "Paraguay", 604: "Peru", 740: "Suriname",
+        840: "United States", 858: "Uruguay", 862: "Venezuela",
+        4: "Afghanistan", 50: "Bangladesh", 64: "Bhutan",
+        96: "Brunei", 104: "Myanmar", 116: "Cambodia", 144: "Sri Lanka",
+        156: "China", 356: "India", 360: "Indonesia", 364: "Iran",
+        368: "Iraq", 376: "Israel", 392: "Japan", 398: "Kazakhstan",
+        400: "Jordan", 408: "North Korea", 410: "South Korea", 414: "Kuwait",
+        417: "Kyrgyzstan", 418: "Laos", 422: "Lebanon", 458: "Malaysia",
+        496: "Mongolia", 512: "Oman", 524: "Nepal", 586: "Pakistan",
+        608: "Philippines", 634: "Qatar", 682: "Saudi Arabia",
+        702: "Singapore", 704: "Vietnam", 760: "Syria",
+        762: "Tajikistan", 764: "Thailand", 784: "UAE",
+        792: "Turkey", 795: "Turkmenistan", 860: "Uzbekistan", 887: "Yemen",
+        8: "Albania", 31: "Azerbaijan", 40: "Austria", 51: "Armenia", 56: "Belgium",
+        70: "Bosnia & Herz.", 100: "Bulgaria", 112: "Belarus",
+        191: "Croatia", 196: "Cyprus", 203: "Czech Republic",
+        208: "Denmark", 233: "Estonia", 246: "Finland",
+        250: "France", 268: "Georgia", 276: "Germany", 300: "Greece",
+        348: "Hungary", 352: "Iceland", 372: "Ireland",
+        380: "Italy", 428: "Latvia", 440: "Lithuania",
+        442: "Luxembourg", 498: "Moldova", 499: "Montenegro",
+        528: "Netherlands", 578: "Norway", 616: "Poland",
+        620: "Portugal", 642: "Romania", 643: "Russia",
+        688: "Serbia", 703: "Slovakia", 705: "Slovenia",
+        724: "Spain", 752: "Sweden", 756: "Switzerland",
+        804: "Ukraine", 807: "N. Macedonia", 826: "United Kingdom", 9001: "Kosovo",
+        36: "Australia", 242: "Fiji", 554: "New Zealand",
+        598: "Papua New Guinea", 882: "Samoa",
+      };
+
+      const NAMES_JA = {
+        12: "アルジェリア", 24: "アンゴラ", 72: "ボツワナ",
+        108: "ブルンジ", 120: "カメルーン", 140: "中央アフリカ",
+        148: "チャド", 174: "コモロ", 178: "コンゴ共和国", 180: "コンゴ民主共和国",
+        204: "ベナン", 226: "赤道ギニア", 231: "エチオピア", 232: "エリトリア",
+        262: "ジブチ", 266: "ガボン", 270: "ガンビア", 288: "ガーナ",
+        324: "ギニア", 384: "コートジボワール", 404: "ケニア", 426: "レソト", 430: "リベリア",
+        434: "リビア", 450: "マダガスカル", 454: "マラウイ", 466: "マリ",
+        478: "モーリタニア", 504: "モロッコ", 508: "モザンビーク", 516: "ナミビア",
+        562: "ニジェール", 566: "ナイジェリア", 624: "ギニアビサウ", 646: "ルワンダ",
+        686: "セネガル", 694: "シエラレオネ", 706: "ソマリア",
+        710: "南アフリカ", 716: "ジンバブエ", 728: "南スーダン", 729: "スーダン",
+        748: "エスワティニ", 768: "トーゴ", 788: "チュニジア", 800: "ウガンダ",
+        818: "エジプト", 834: "タンザニア", 854: "ブルキナファソ", 894: "ザンビア",
+        9002: "ソマリランド",
+        32: "アルゼンチン", 68: "ボリビア", 76: "ブラジル",
+        124: "カナダ", 152: "チリ", 170: "コロンビア", 188: "コスタリカ",
+        192: "キューバ", 214: "ドミニカ共和国", 218: "エクアドル", 222: "エルサルバドル",
+        254: "仏領ギアナ", 304: "グリーンランド", 320: "グアテマラ", 328: "ガイアナ", 332: "ハイチ",
+        340: "ホンジュラス", 388: "ジャマイカ", 484: "メキシコ", 558: "ニカラグア",
+        591: "パナマ", 600: "パラグアイ", 604: "ペルー", 740: "スリナム",
+        840: "アメリカ", 858: "ウルグアイ", 862: "ベネズエラ",
+        4: "アフガニスタン", 50: "バングラデシュ", 64: "ブータン",
+        96: "ブルネイ", 104: "ミャンマー", 116: "カンボジア", 144: "スリランカ",
+        156: "中国", 356: "インド", 360: "インドネシア", 364: "イラン",
+        368: "イラク", 376: "イスラエル", 392: "日本", 398: "カザフスタン",
+        400: "ヨルダン", 408: "北朝鮮", 410: "韓国", 414: "クウェート",
+        417: "キルギス", 418: "ラオス", 422: "レバノン", 458: "マレーシア",
+        496: "モンゴル", 512: "オマーン", 524: "ネパール", 586: "パキスタン",
+        608: "フィリピン", 634: "カタール", 682: "サウジアラビア",
+        702: "シンガポール", 704: "ベトナム", 760: "シリア",
+        762: "タジキスタン", 764: "タイ", 784: "アラブ首長国連邦",
+        792: "トルコ", 795: "トルクメニスタン", 860: "ウズベキスタン", 887: "イエメン",
+        8: "アルバニア", 31: "アゼルバイジャン", 40: "オーストリア", 51: "アルメニア", 56: "ベルギー",
+        70: "ボスニア・ヘルツェゴビナ", 100: "ブルガリア", 112: "ベラルーシ",
+        191: "クロアチア", 196: "キプロス", 203: "チェコ",
+        208: "デンマーク", 233: "エストニア", 246: "フィンランド",
+        250: "フランス", 268: "ジョージア", 276: "ドイツ", 300: "ギリシャ",
+        348: "ハンガリー", 352: "アイスランド", 372: "アイルランド",
+        380: "イタリア", 428: "ラトビア", 440: "リトアニア",
+        442: "ルクセンブルク", 498: "モルドバ", 499: "モンテネグロ",
+        528: "オランダ", 578: "ノルウェー", 616: "ポーランド",
+        620: "ポルトガル", 642: "ルーマニア", 643: "ロシア",
+        688: "セルビア", 703: "スロバキア", 705: "スロベニア",
+        724: "スペイン", 752: "スウェーデン", 756: "スイス",
+        804: "ウクライナ", 807: "北マケドニア", 826: "イギリス", 9001: "コソボ",
+        36: "オーストラリア", 242: "フィジー", 554: "ニュージーランド",
+        598: "パプアニューギニア", 882: "サモア",
+      };
+
+      const LANGS = {
+        ko: { label: '한국어', title: '세계지도', quizOn: '퀴즈', quizOff: '일반', scoreLabel: '맞힌 나라', quizQuestion: '이 나라는 어디일까요?', names: NAMES_KO },
+        en: { label: 'English', title: 'World Map', quizOn: 'Quiz', quizOff: 'Normal', scoreLabel: 'Score', quizQuestion: 'Which country is this?', names: NAMES_EN },
+        ja: { label: '日本語', title: '世界地図', quizOn: 'クイズ', quizOff: '通常', scoreLabel: '正解数', quizQuestion: 'この国はどこ？', names: NAMES_JA },
+      };
+
+      let lang = 'ko';
+      const names = () => LANGS[lang].names;
 
       // 해외 영토로 인해 자동 centroid가 틀어지는 나라의 좌표 수동 지정 [lon, lat]
       const CENTROIDS = {
@@ -387,7 +511,7 @@
             else if (Math.abs(lon - 46.2) < 1 && Math.abs(lat - 9.8) < 1) f.id = 9002; // 소말릴란드
           }
         });
-        totalNamedCountries = features.filter(f => NAMES[+f.id]).length;
+        totalNamedCountries = features.filter(f => names()[+f.id]).length;
         draw();
       }
 
@@ -449,7 +573,7 @@
           const areaThreshold = Math.max(20, 800 / (zoomRatio * zoomRatio));
 
           labelsG.selectAll('text')
-            .data(features.filter(f => NAMES[+f.id]), d => d.id)
+            .data(features.filter(f => names()[+f.id]), d => d.id)
             .join('text')
             .attr('class', 'country-label')
             .attr('stroke', 'rgba(0,0,0,0.55)')
@@ -464,7 +588,7 @@
                 .style('display', visible ? null : 'none')
                 .attr('x', pos ? pos[0] : 0)
                 .attr('y', pos ? pos[1] : 0)
-                .text(NAMES[+d.id]);
+                .text(names()[+d.id]);
             });
         }
       }
@@ -477,7 +601,7 @@
         const clicked = features.find(f => d3.geoContains(f, inv));
         if (!clicked) return;
         const id = +clicked.id;
-        if (!NAMES[id]) return;
+        if (!names()[id]) return;
         if (!state.quizMode) return;
         if (state.answered.has(id)) return;
         state.activeId = id;
@@ -487,8 +611,8 @@
       }
 
       function openQuizPanel(id) {
-        const correct = NAMES[id];
-        const pool = Object.values(NAMES).filter(n => n !== correct);
+        const correct = names()[id];
+        const pool = Object.values(names()).filter(n => n !== correct);
         const wrong = [];
         while (wrong.length < 3 && pool.length > 0) {
           wrong.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
@@ -531,7 +655,17 @@
 
       function updateScore() {
         const { correct } = state.score;
+        document.getElementById('score-label').textContent = LANGS[lang].scoreLabel;
         document.getElementById('score-display').textContent = `${correct} / ${totalNamedCountries}`;
+      }
+
+      function applyLang() {
+        const L = LANGS[lang];
+        document.getElementById('globe-title').textContent = L.title;
+        document.getElementById('quiz-question').textContent = L.quizQuestion;
+        document.getElementById('btn-quiz').textContent = state.quizMode ? L.quizOff : L.quizOn;
+        updateScore();
+        draw();
       }
 
       document.getElementById('btn-quiz').addEventListener('click', () => {
@@ -540,7 +674,7 @@
         state.activeId = null;
         state.score = { correct: 0 };
         closePanel();
-        document.getElementById('btn-quiz').textContent = state.quizMode ? '일반' : '퀴즈';
+        document.getElementById('btn-quiz').textContent = state.quizMode ? LANGS[lang].quizOff : LANGS[lang].quizOn;
         document.getElementById('score-bar').hidden = !state.quizMode;
         updateScore();
         draw();
@@ -556,6 +690,11 @@
         pathGen = d3.geoPath(proj);
         document.getElementById('globe-svg').setAttribute('viewBox', `0 0 ${nw} ${nh}`);
         draw();
+      });
+
+      document.getElementById('lang-select').addEventListener('change', (e) => {
+        lang = e.target.value;
+        applyLang();
       });
 
       init().catch(console.error);
