@@ -163,12 +163,14 @@
       </div>
       <div class="header-right">
         <div id="score-bar" hidden><span id="score-label">맞힌 나라</span>: <strong id="score-display">0 / 0</strong></div>
-        <select class="lang-select" id="lang-select">
-          <option value="ko">한국어</option>
-          <option value="en">English</option>
-          <option value="ja">日本語</option>
-        </select>
-        <button class="quiz-btn" id="btn-quiz" type="button">퀴즈</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select class="lang-select" id="lang-select">
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+          </select>
+          <button class="quiz-btn" id="btn-quiz" type="button">퀴즈</button>
+        </div>
       </div>
     </header>
 
@@ -645,7 +647,7 @@
         if (ok) state.score.correct++;
         updateScore();
         draw();
-        setTimeout(() => { state.activeId = null; closePanel(); draw(); }, 1400);
+        setTimeout(() => { state.activeId = null; closePanel(); draw(); }, 700);
       }
 
       function closePanel() {
