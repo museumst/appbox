@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Harmony</title>
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260518-harmony" />
+    <style>
+      body.harmony-app {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(239, 246, 244, 0.96)),
+          var(--bg);
+      }
+
+      .harmony-panel {
+        width: min(860px, 100%);
+      }
+
+      .harmony-header {
+        display: flex;
+        gap: 16px;
+        align-items: end;
+        justify-content: space-between;
+      }
+
+      .harmony-status {
+        min-width: 7.5rem;
+        margin: 0 0 6px;
+        color: var(--accent-strong);
+        font-size: 1rem;
+        font-weight: 900;
+        text-align: right;
+      }
+
+      .chord-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 26px 0 0;
+      }
+
+      .chord-button {
+        min-height: 58px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-strong);
+        color: var(--text);
+        cursor: pointer;
+        font-size: 1.15rem;
+        font-weight: 900;
+        transition:
+          background 0.12s ease,
+          border-color 0.12s ease,
+          color 0.12s ease,
+          transform 0.12s ease;
+      }
+
+      .chord-button:hover,
+      .chord-button:focus-visible,
+      .chord-button.is-active {
+        border-color: var(--accent);
+        background: #dff3ef;
+        color: var(--accent-strong);
+        outline: none;
+      }
+
+      .chord-button:active {
+        transform: translateY(1px);
+      }
+
+      .keyboard {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(11, minmax(0, 1fr));
+        height: clamp(230px, 36vw, 340px);
+        margin: 32px 0 0;
+        border: 1px solid #111827;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #111827;
+      }
+
+      .key {
+        position: relative;
+        border: 0;
+        border-right: 1px solid #cbd5d1;
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .key.white {
+        z-index: 1;
+        display: flex;
+        align-items: end;
+        justify-content: center;
+        padding: 0 4px 14px;
+        background: #fffefa;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      .key.white:last-child {
+        border-right: 0;
+      }
+
+      .key.black {
+        position: absolute;
+        z-index: 3;
+        top: 0;
+        width: 7.2%;
+        height: 62%;
+        border: 1px solid #101418;
+        border-top: 0;
+        border-radius: 0 0 6px 6px;
+        background: linear-gradient(180deg, #171b21, #050608);
+        color: #cbd5d1;
+        transform: translateX(-50%);
+      }
+
+      .key.black span {
+        position: absolute;
+        right: 0;
+        bottom: 12px;
+        left: 0;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .key.is-pressed.white {
+        background: #b7ebe0;
+        color: #073f3b;
+        box-shadow: inset 0 10px 0 rgba(15, 118, 110, 0.22);
+      }
+
+      .key.is-pressed.black {
+        background: linear-gradient(180deg, #0f766e, #084d48);
+        color: #ecfdf5;
+        box-shadow: inset 0 -8px 0 rgba(255, 255, 255, 0.12);
+      }
+
+      .key:focus-visible {
+        outline: 3px solid var(--yellow);
+        outline-offset: -3px;
+      }
+
+      .harmony-notes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-height: 38px;
+        margin: 20px 0 0;
+      }
+
+      .note-chip {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 10px;
+        background: var(--surface-strong);
+        color: var(--text);
+        font-size: 0.86rem;
+        font-weight: 900;
+      }
+
+      @media (max-width: 700px) {
+        .harmony-app {
+          padding: 14px;
+        }
+
+        .harmony-panel {
+          padding: 18px;
+        }
+
+        .harmony-header {
+          display: grid;
+          align-items: start;
+        }
+
+        .harmony-status {
+          text-align: left;
+        }
+
+        .chord-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .key.black {
+          width: 8%;
+        }
+      }
+    </style>
+  </head>
+  <body class="mini-app harmony-app">
+    <main class="mini-app-panel harmony-panel">
+      <div class="harmony-header">
+        <div>
+          <p class="eyebrow">Music</p>
+          <h1>Harmony</h1>
+        </div>
+        <p class="harmony-status" id="status">C Major</p>
+      </div>
+
+      <div class="chord-grid" id="chord-grid" aria-label="코드 선택"></div>
+      <div class="keyboard" id="keyboard" aria-label="건반"></div>
+      <div class="harmony-notes" id="notes" aria-live="polite"></div>
+    </main>
+
+    <script>
+      const chords = [
+        { name: "C Major", notes: ["C4", "E4", "G4"] },
+        { name: "D Minor", notes: ["D4", "F4", "A4"] },
+        { name: "E Minor", notes: ["E4", "G4", "B4"] },
+        { name: "F Major", notes: ["F4", "A4", "C5"] },
+        { name: "G Major", notes: ["G4", "B4", "D5"] },
+        { name: "A Minor", notes: ["A4", "C5", "E5"] },
+        { name: "B Dim", notes: ["B4", "D5", "F5"] },
+        { name: "C Major 7", notes: ["C4", "E4", "G4", "B4"] },
+      ];
+
+      const keys = [
+        { note: "C4", type: "white", label: "C" },
+        { note: "C#4", type: "black", label: "C#", after: 1 },
+        { note: "D4", type: "white", label: "D" },
+        { note: "D#4", type: "black", label: "D#", after: 2 },
+        { note: "E4", type: "white", label: "E" },
+        { note: "F4", type: "white", label: "F" },
+        { note: "F#4", type: "black", label: "F#", after: 4 },
+        { note: "G4", type: "white", label: "G" },
+        { note: "G#4", type: "black", label: "G#", after: 5 },
+        { note: "A4", type: "white", label: "A" },
+        { note: "A#4", type: "black", label: "A#", after: 6 },
+        { note: "B4", type: "white", label: "B" },
+        { note: "C5", type: "white", label: "C" },
+        { note: "C#5", type: "black", label: "C#", after: 8 },
+        { note: "D5", type: "white", label: "D" },
+        { note: "D#5", type: "black", label: "D#", after: 9 },
+        { note: "E5", type: "white", label: "E" },
+        { note: "F5", type: "white", label: "F" },
+      ];
+
+      const noteFrequency = {
+        C4: 261.63,
+        "C#4": 277.18,
+        D4: 293.66,
+        "D#4": 311.13,
+        E4: 329.63,
+        F4: 349.23,
+        "F#4": 369.99,
+        G4: 392,
+        "G#4": 415.3,
+        A4: 440,
+        "A#4": 466.16,
+        B4: 493.88,
+        C5: 523.25,
+        "C#5": 554.37,
+        D5: 587.33,
+        "D#5": 622.25,
+        E5: 659.25,
+        F5: 698.46,
+      };
+
+      const chordGrid = document.querySelector("#chord-grid");
+      const keyboard = document.querySelector("#keyboard");
+      const notesOutput = document.querySelector("#notes");
+      const statusOutput = document.querySelector("#status");
+      let audioContext;
+      let selectedChord = chords[0];
+      let pressTimer;
+
+      function getAudioContext() {
+        if (!audioContext) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return null;
+          audioContext = new AudioContextClass();
+        }
+        return audioContext;
+      }
+
+      function playTone(frequency, startTime, duration) {
+        const context = getAudioContext();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, startTime);
+        gain.gain.setValueAtTime(0.0001, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.18, startTime + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration + 0.02);
+      }
+
+      function setPressed(notes) {
+        clearTimeout(pressTimer);
+        document.querySelectorAll(".key").forEach((key) => {
+          key.classList.toggle("is-pressed", notes.includes(key.dataset.note));
+        });
+        pressTimer = setTimeout(() => {
+          document.querySelectorAll(".key.is-pressed").forEach((key) => key.classList.remove("is-pressed"));
+        }, 520);
+      }
+
+      async function playNotes(notes) {
+        setPressed(notes);
+        const context = getAudioContext();
+        if (!context) return;
+        if (context.state === "suspended") {
+          await context.resume();
+        }
+        const startTime = context.currentTime + 0.02;
+        notes.forEach((note) => playTone(noteFrequency[note], startTime, 0.75));
+      }
+
+      function renderChords() {
+        chordGrid.innerHTML = chords
+          .map(
+            (chord) => `
+              <button
+                class="chord-button ${chord.name === selectedChord.name ? "is-active" : ""}"
+                type="button"
+                data-chord="${chord.name}"
+                aria-pressed="${chord.name === selectedChord.name ? "true" : "false"}"
+              >
+                ${chord.name}
+              </button>
+            `
+          )
+          .join("");
+      }
+
+      function renderKeyboard() {
+        const whiteKeys = keys.filter((key) => key.type === "white");
+        const blackKeys = keys.filter((key) => key.type === "black");
+        keyboard.innerHTML = [
+          ...whiteKeys.map(
+            (key) => `
+              <button class="key white" type="button" data-note="${key.note}" aria-label="${key.note}">
+                <span>${key.label}</span>
+              </button>
+            `
+          ),
+          ...blackKeys.map((key) => {
+            const left = (key.after / 11) * 100;
+            return `
+              <button
+                class="key black"
+                style="left: ${left}%"
+                type="button"
+                data-note="${key.note}"
+                aria-label="${key.note}"
+              >
+                <span>${key.label}</span>
+              </button>
+            `;
+          }),
+        ].join("");
+      }
+
+      function renderNotes() {
+        statusOutput.textContent = selectedChord.name;
+        notesOutput.innerHTML = selectedChord.notes
+          .map((note) => `<span class="note-chip">${note}</span>`)
+          .join("");
+      }
+
+      function selectChord(chord) {
+        selectedChord = chord;
+        renderChords();
+        renderNotes();
+        playNotes(chord.notes);
+      }
+
+      chordGrid.addEventListener("click", (event) => {
+        const button = event.target.closest(".chord-button");
+        if (!button) return;
+        const chord = chords.find((item) => item.name === button.dataset.chord);
+        selectChord(chord);
+      });
+
+      keyboard.addEventListener("click", (event) => {
+        const key = event.target.closest(".key");
+        if (!key) return;
+        playNotes([key.dataset.note]);
+      });
+
+      renderChords();
+      renderKeyboard();
+      renderNotes();
+    </script>
+  </body>
+</html>

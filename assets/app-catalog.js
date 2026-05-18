@@ -54,6 +54,17 @@ const apps = [
     statusLabel: "실행 가능",
     tags: ["history", "joseon", "memory"],
   },
+  {
+    title: "Harmony",
+    description: "코드를 선택하면 건반 위에서 눌린 음을 보여주고 실제 화음으로 들려주는 미니 신시사이저입니다.",
+    category: "music",
+    categoryLabel: "음악",
+    thumbnail: "harmony",
+    app_url: "apps/harmony/index.html",
+    status: "ready",
+    statusLabel: "실행 가능",
+    tags: ["music", "chord", "keyboard"],
+  },
 ];
 
 const appNameList = document.querySelector("#app-name-list");
