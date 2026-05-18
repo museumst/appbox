@@ -162,7 +162,6 @@
         <h1 id="globe-title">세계지도</h1>
       </div>
       <div class="header-right">
-        <div id="score-bar" hidden><span id="score-label">맞힌 나라</span>: <strong id="score-display">0 / 0</strong></div>
         <div style="display:flex; gap:8px; align-items:center;">
           <select class="lang-select" id="lang-select">
             <option value="ko">한국어</option>
@@ -171,6 +170,7 @@
           </select>
           <button class="quiz-btn" id="btn-quiz" type="button">퀴즈</button>
         </div>
+        <div id="score-bar" hidden><span id="score-label">맞힌 나라</span>: <strong id="score-display">0 / 0</strong></div>
       </div>
     </header>
 
@@ -647,7 +647,7 @@
         if (ok) state.score.correct++;
         updateScore();
         draw();
-        setTimeout(() => { state.activeId = null; closePanel(); draw(); }, 300);
+        state.activeId = null; closePanel(); draw();
       }
 
       function closePanel() {
