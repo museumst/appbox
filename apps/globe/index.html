@@ -232,10 +232,11 @@
         scale: 0,
         answered: new Map(),
         activeId: null,
-        score: { correct: 0, total: 0 },
+        score: { correct: 0 },
       };
 
       let features = [];
+      let totalNamedCountries = 0;
       let svg, proj, pathGen;
       let baseScale = 0;
       let dragMoved = false;
@@ -373,6 +374,7 @@
 
         const world = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r => r.json());
         features = topojson.feature(world, world.objects.countries).features;
+        totalNamedCountries = features.filter(f => NAMES[+f.id]).length;
         draw();
       }
 
@@ -503,7 +505,6 @@
           else if (btn.textContent === chosen && !ok) btn.classList.add('wrong');
         });
         state.answered.set(id, ok ? 'correct' : 'wrong');
-        state.score.total++;
         if (ok) state.score.correct++;
         updateScore();
         draw();
@@ -516,15 +517,15 @@
       }
 
       function updateScore() {
-        const { correct, total } = state.score;
-        document.getElementById('score-display').textContent = `${correct} / ${total}`;
+        const { correct } = state.score;
+        document.getElementById('score-display').textContent = `${correct} / ${totalNamedCountries}`;
       }
 
       document.getElementById('btn-quiz').addEventListener('click', () => {
         state.quizMode = !state.quizMode;
         state.answered.clear();
         state.activeId = null;
-        state.score = { correct: 0, total: 0 };
+        state.score = { correct: 0 };
         closePanel();
         document.getElementById('btn-quiz').textContent = state.quizMode ? '일반' : '퀴즈';
         document.getElementById('score-bar').hidden = !state.quizMode;
