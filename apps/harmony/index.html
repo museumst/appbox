@@ -36,10 +36,16 @@
         display: grid;
         gap: 8px;
         width: min(240px, 100%);
-        margin: 24px 0 0;
         color: var(--muted);
         font-size: 0.86rem;
         font-weight: 900;
+      }
+
+      .harmony-controls {
+        display: flex;
+        gap: 12px;
+        align-items: end;
+        margin: 24px 0 0;
       }
 
       .root-control select {
@@ -53,6 +59,107 @@
         font: inherit;
         font-size: 1.05rem;
         font-weight: 900;
+      }
+
+      .transport-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .transport-button,
+      .slot-delete {
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .transport-button {
+        width: 48px;
+        height: 48px;
+      }
+
+      .transport-button:hover,
+      .transport-button:focus-visible,
+      .transport-button.is-active,
+      .slot-delete:hover,
+      .slot-delete:focus-visible {
+        border-color: var(--accent);
+        color: var(--accent-strong);
+        outline: none;
+      }
+
+      .transport-button:disabled {
+        cursor: default;
+        opacity: 0.4;
+      }
+
+      .transport-button svg,
+      .slot-delete svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+
+      .sequence-slots {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin: 16px 0 0;
+      }
+
+      .sequence-slot {
+        position: relative;
+        display: grid;
+        min-height: 64px;
+        align-content: center;
+        gap: 4px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 38px 10px 10px;
+        background: var(--surface-strong);
+      }
+
+      .sequence-slot.is-empty {
+        color: #a3aaad;
+        background: var(--surface);
+      }
+
+      .sequence-slot.is-playing {
+        border-color: var(--accent);
+        background: #dff3ef;
+      }
+
+      .slot-index,
+      .slot-notes {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 900;
+        line-height: 1.2;
+      }
+
+      .slot-chord {
+        margin: 0;
+        color: var(--text);
+        font-size: 0.96rem;
+        font-weight: 900;
+        line-height: 1.2;
+      }
+
+      .slot-delete {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 28px;
+        height: 28px;
+      }
+
+      .slot-delete[hidden] {
+        display: none;
       }
 
       .chord-sections {
@@ -238,6 +345,22 @@
           width: 100%;
         }
 
+        .harmony-controls {
+          display: grid;
+        }
+
+        .transport-actions {
+          width: 100%;
+        }
+
+        .transport-button {
+          width: 100%;
+        }
+
+        .sequence-slots {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .chord-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -258,10 +381,25 @@
         <p class="harmony-status" id="status">C Major</p>
       </div>
 
-      <label class="root-control">
-        <span>Root</span>
-        <select id="root-select" aria-label="뿌리음 선택"></select>
-      </label>
+      <div class="harmony-controls">
+        <label class="root-control">
+          <span>Root</span>
+          <select id="root-select" aria-label="뿌리음 선택"></select>
+        </label>
+        <div class="transport-actions" aria-label="저장 코드 재생 컨트롤">
+          <button class="transport-button" type="button" id="record-button" aria-label="선택한 코드 저장">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="7"></circle>
+            </svg>
+          </button>
+          <button class="transport-button" type="button" id="play-button" aria-label="저장한 코드 재생" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="sequence-slots" id="sequence-slots" aria-label="저장된 코드 슬롯"></div>
       <div class="chord-sections" id="chord-grid" aria-label="코드 선택"></div>
       <div class="keyboard-wrap">
         <div class="keyboard" id="keyboard" aria-label="건반"></div>
@@ -321,15 +459,24 @@
       const chordGrid = document.querySelector("#chord-grid");
       const keyboard = document.querySelector("#keyboard");
       const notesOutput = document.querySelector("#notes");
+      const playButton = document.querySelector("#play-button");
+      const recordButton = document.querySelector("#record-button");
+      const sequenceSlotsElement = document.querySelector("#sequence-slots");
       const statusOutput = document.querySelector("#status");
       let audioContext;
       let masterInput;
       let selectedRoot = rootOptions[0];
       let selectedChordType = chordTypes[0];
       let selectedChord = buildChord(selectedRoot, selectedChordType);
+      let isSequencePlaying = false;
+      let sequenceIndex = 0;
+      let sequenceTimer;
       const activeSources = new Map();
       const activeVoices = new Map();
       const releaseTimers = new Map();
+      const sequenceSlots = Array(8).fill(null);
+      const beatMs = 720;
+      const beatHoldMs = 560;
 
       function buildKeyboard(startMidi, endMidi) {
         const whiteCount = Array.from({ length: endMidi - startMidi + 1 }, (_, index) => startMidi + index)
@@ -384,6 +531,14 @@
           name: `${root.name} ${type.label}`,
           notes,
           type,
+        };
+      }
+
+      function cloneChord(chord) {
+        return {
+          id: chord.id,
+          name: chord.name,
+          notes: [...chord.notes],
         };
       }
 
@@ -499,6 +654,7 @@
           );
           button.classList.toggle("is-playing", isPlaying);
         });
+        renderSequenceSlots();
       }
 
       async function resumeAudio() {
@@ -532,12 +688,12 @@
         syncHeldNotes();
       }
 
-      function releaseNotes(sourceId) {
+      function releaseNotes(sourceId, force = false) {
         const source = activeSources.get(sourceId);
         if (!source) return;
 
         const heldFor = Date.now() - source.startedAt;
-        if (heldFor < 120) {
+        if (!force && heldFor < 120) {
           clearTimeout(releaseTimers.get(sourceId));
           releaseTimers.set(
             sourceId,
@@ -559,6 +715,134 @@
         renderChords();
         renderNotes();
         updatePressedKeys(getHeldNotes());
+      }
+
+      function getFilledSlots() {
+        return sequenceSlots
+          .map((chord, index) => ({ chord, index }))
+          .filter((slot) => slot.chord);
+      }
+
+      function renderSequenceSlots() {
+        const playingSource = activeSources.get("sequence");
+
+        sequenceSlotsElement.innerHTML = sequenceSlots
+          .map((chord, index) => {
+            const isPlaying = playingSource?.slotIndex === index;
+            const notes = chord?.notes.map((note) => note.replace(/\d+$/, "")).join(" ");
+
+            return `
+              <div class="sequence-slot ${chord ? "" : "is-empty"} ${isPlaying ? "is-playing" : ""}">
+                <p class="slot-index">${index + 1}</p>
+                <p class="slot-chord">${chord?.name || "-"}</p>
+                <p class="slot-notes">${notes || ""}</p>
+                <button
+                  class="slot-delete"
+                  type="button"
+                  data-slot="${index}"
+                  aria-label="${index + 1}번 슬롯 삭제"
+                  ${chord ? "" : "hidden"}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M15.7 3.7a2 2 0 0 1 2.8 0l1.8 1.8a2 2 0 0 1 0 2.8L10.6 18H5.2l-1.6-1.6a2 2 0 0 1 0-2.8L15.7 3.7Zm-8.9 9.5 4 4 8.1-8.1-4-4-8.1 8.1ZM4 20h16v2H4v-2Z"></path>
+                  </svg>
+                </button>
+              </div>
+            `;
+          })
+          .join("");
+
+        playButton.disabled = getFilledSlots().length === 0;
+        playButton.classList.toggle("is-active", isSequencePlaying);
+        playButton.setAttribute("aria-label", isSequencePlaying ? "재생 정지" : "저장한 코드 재생");
+        recordButton.disabled = sequenceSlots.every(Boolean);
+        recordButton.setAttribute(
+          "aria-label",
+          recordButton.disabled ? "슬롯이 모두 찼습니다" : "선택한 코드 저장"
+        );
+        playButton.innerHTML = isSequencePlaying
+          ? `
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 5h4v14H7V5Zm6 0h4v14h-4V5Z"></path>
+            </svg>
+          `
+          : `
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z"></path>
+            </svg>
+          `;
+      }
+
+      function recordSelectedChord() {
+        const emptyIndex = sequenceSlots.findIndex((slot) => !slot);
+        if (emptyIndex === -1) return;
+
+        sequenceSlots[emptyIndex] = cloneChord(selectedChord);
+        renderSequenceSlots();
+      }
+
+      function deleteSlot(index) {
+        if (activeSources.get("sequence")?.slotIndex === index) {
+          releaseNotes("sequence", true);
+        }
+        sequenceSlots[index] = null;
+        const filledCount = getFilledSlots().length;
+        if (filledCount === 0) {
+          stopSequence();
+        } else {
+          sequenceIndex %= filledCount;
+        }
+        renderSequenceSlots();
+      }
+
+      function stopSequence() {
+        isSequencePlaying = false;
+        clearTimeout(sequenceTimer);
+        releaseNotes("sequence", true);
+        renderSequenceSlots();
+      }
+
+      async function playSequenceStep() {
+        if (!isSequencePlaying) return;
+
+        const filledSlots = getFilledSlots();
+        if (filledSlots.length === 0) {
+          stopSequence();
+          return;
+        }
+
+        const { chord, index } = filledSlots[sequenceIndex % filledSlots.length];
+        sequenceIndex = (sequenceIndex + 1) % filledSlots.length;
+        activeSources.delete("sequence");
+        activeSources.set("sequence", {
+          notes: chord.notes,
+          chordName: chord.name,
+          startedAt: Date.now(),
+          slotIndex: index,
+        });
+        await resumeAudio();
+        if (!isSequencePlaying) return;
+        syncHeldNotes();
+
+        clearTimeout(releaseTimers.get("sequence"));
+        releaseTimers.set(
+          "sequence",
+          setTimeout(() => {
+            releaseNotes("sequence");
+          }, beatHoldMs)
+        );
+
+        sequenceTimer = setTimeout(playSequenceStep, beatMs);
+      }
+
+      function startSequence() {
+        const filledSlots = getFilledSlots();
+        if (filledSlots.length === 0) return;
+
+        isSequencePlaying = true;
+        sequenceIndex = 0;
+        renderSequenceSlots();
+        playSequenceStep();
       }
 
       function renderChords() {
@@ -712,10 +996,27 @@
         updatePressedKeys(getHeldNotes());
       });
 
+      recordButton.addEventListener("click", recordSelectedChord);
+
+      playButton.addEventListener("click", () => {
+        if (isSequencePlaying) {
+          stopSequence();
+          return;
+        }
+        startSequence();
+      });
+
+      sequenceSlotsElement.addEventListener("click", (event) => {
+        const button = event.target.closest(".slot-delete");
+        if (!button) return;
+        deleteSlot(Number(button.dataset.slot));
+      });
+
       renderRootOptions();
       renderChords();
       renderKeyboard();
       renderNotes();
+      renderSequenceSlots();
     </script>
   </body>
 </html>
