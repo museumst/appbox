@@ -241,6 +241,7 @@
       let pinchDist = null;
       let hoveredId = null;
       const activePointers = new Map();
+      const isMobile = window.matchMedia('(pointer: coarse)').matches;
 
       async function init() {
         const w = window.innerWidth;
@@ -386,9 +387,9 @@
         if (state.quizMode) {
           labelsG.selectAll('text').remove();
         } else {
-          // Label font size scales with zoom, base 11px
-          const fontSize = Math.max(8, Math.min(22, 11 * zoomRatio));
-          const strokeW = Math.max(2, 3 * zoomRatio);
+          // 모바일은 글자 크기 고정, PC는 줌에 비례해서 확대
+          const fontSize = isMobile ? 11 : Math.max(8, Math.min(22, 11 * zoomRatio));
+          const strokeW = isMobile ? 2.5 : Math.max(2, 3 * zoomRatio);
           // Area threshold scales down as we zoom in (small countries become visible)
           const areaThreshold = Math.max(20, 200 / (zoomRatio * zoomRatio));
 
