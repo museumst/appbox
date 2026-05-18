@@ -209,7 +209,7 @@
         268: "조지아", 442: "룩셈부르크", 498: "몰도바", 499: "몬테네그로",
         528: "네덜란드", 578: "노르웨이", 616: "폴란드",
         620: "포르투갈", 642: "루마니아", 643: "러시아",
-        688: "세르비아", 703: "슬로바키아", 705: "슬로베니아",
+        9001: "코소보", 688: "세르비아", 703: "슬로바키아", 705: "슬로베니아",
         724: "스페인", 752: "스웨덴", 756: "스위스",
         804: "우크라이나", 807: "북마케도니아", 826: "영국",
         // 오세아니아
@@ -226,6 +226,7 @@
         528: [5.3, 52.4],    // 네덜란드 (카리브 영토로 인해 치우침)
         152: [-73, -37],     // 칠레 (가늘고 긴 국토로 인해 치우침)
         704: [109, 14],      // 베트남 (가늘고 긴 국토로 인해 치우침)
+        191: [16, 46.5],     // 크로아티아 (위로 조정)
       };
 
       const state = {
@@ -376,6 +377,13 @@
 
         const world = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r => r.json());
         features = topojson.feature(world, world.objects.countries).features;
+        // null ID feature에 centroid 기반으로 커스텀 ID 부여
+        features.forEach(f => {
+          if (f.id == null) {
+            const [lon, lat] = d3.geoCentroid(f);
+            if (Math.abs(lon - 20.9) < 1 && Math.abs(lat - 42.6) < 1) f.id = 9001; // 코소보
+          }
+        });
         totalNamedCountries = features.filter(f => NAMES[+f.id]).length;
         draw();
       }
@@ -433,7 +441,7 @@
         } else {
           // 모바일은 글자 크기 고정, PC는 줌에 비례해서 확대
           const fontSize = isMobile ? 11 : Math.max(8, Math.min(16, 11 * zoomRatio));
-          const strokeW = isMobile ? 2.5 : Math.max(2, 3 * zoomRatio);
+          const strokeW = 2.5;
           // Area threshold scales down as we zoom in (small countries become visible)
           const areaThreshold = Math.max(20, 800 / (zoomRatio * zoomRatio));
 
