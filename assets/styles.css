@@ -171,7 +171,7 @@ h1 {
 
 .detail-copy {
   /* 오른쪽 상세영역 안의 제목/설명 텍스트 묶음 */
-  max-width: 760px;
+  width: 100%;
 }
 
 #detail-title {
@@ -184,7 +184,6 @@ h1 {
 
 #detail-description {
   /* 오른쪽 상세영역의 앱 설명 */
-  max-width: 640px;
   margin: 28px 0 0;
   color: var(--muted);
   font-size: clamp(1.1rem, 2vw, 1.7rem);
