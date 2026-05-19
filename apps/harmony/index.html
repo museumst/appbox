@@ -162,6 +162,70 @@
         display: none;
       }
 
+      /* ── Diatonic section ── */
+
+      .diatonic-section {
+        display: grid;
+        gap: 8px;
+        margin: 26px 0 0;
+      }
+
+      .diatonic-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .diatonic-button {
+        display: grid;
+        gap: 3px;
+        min-height: 58px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 7px 4px;
+        background: var(--surface-strong);
+        color: var(--text);
+        cursor: pointer;
+        font-family: inherit;
+        touch-action: manipulation;
+        user-select: none;
+        align-content: center;
+        transition:
+          background 0.12s ease,
+          border-color 0.12s ease,
+          color 0.12s ease;
+      }
+
+      .diatonic-button:hover,
+      .diatonic-button:focus-visible,
+      .diatonic-button.is-active {
+        border-color: var(--accent);
+        background: #dff3ef;
+        color: var(--accent-strong);
+        outline: none;
+      }
+
+      .diatonic-roman {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 900;
+        color: var(--muted);
+        line-height: 1;
+      }
+
+      .diatonic-button.is-active .diatonic-roman {
+        color: var(--accent);
+      }
+
+      .diatonic-name {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 900;
+        line-height: 1.2;
+      }
+
+      /* ── Chord sections ── */
+
       .chord-sections {
         display: grid;
         gap: 18px;
@@ -220,6 +284,43 @@
         transform: translateY(1px);
       }
 
+      /* ── Theory panel ── */
+
+      .theory-panel {
+        display: grid;
+        gap: 7px;
+        margin: 18px 0 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px 16px;
+        background: var(--surface);
+      }
+
+      .theory-row {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        margin: 0;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.4;
+      }
+
+      .theory-label {
+        flex-shrink: 0;
+        font-size: 0.72rem;
+        font-weight: 900;
+        color: var(--muted);
+        letter-spacing: 0.02em;
+      }
+
+      .theory-character {
+        color: var(--accent-strong);
+      }
+
+      /* ── Keyboard ── */
+
       .keyboard-wrap {
         max-width: 100%;
         margin: 32px 0 0;
@@ -252,9 +353,10 @@
       .key.white {
         z-index: 1;
         display: flex;
-        align-items: end;
-        justify-content: center;
-        padding: 0 4px 14px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 4px 14px;
         background: #fffefa;
         color: var(--muted);
         font-size: 0.82rem;
@@ -277,13 +379,14 @@
         background: linear-gradient(180deg, #171b21, #050608);
         color: #cbd5d1;
         transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 0 12px;
       }
 
-      .key.black span {
-        position: absolute;
-        right: 0;
-        bottom: 12px;
-        left: 0;
+      .key.black .key-label {
         font-size: 0.72rem;
         font-weight: 800;
       }
@@ -304,6 +407,22 @@
         outline: 3px solid var(--yellow);
         outline-offset: -3px;
       }
+
+      .key-role {
+        font-size: 0.65rem;
+        font-weight: 900;
+        color: #0f766e;
+        line-height: 1;
+        min-height: 0.65rem;
+      }
+
+      .key.black .key-role {
+        font-size: 0.58rem;
+        color: #6ee7d7;
+        min-height: 0.58rem;
+      }
+
+      /* ── Notes ── */
 
       .harmony-notes {
         display: flex;
@@ -361,6 +480,14 @@
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
+        .diatonic-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .diatonic-grid > :nth-child(n + 5) {
+          /* last 3 fill 3 of 4 cols on second row — looks fine */
+        }
+
         .chord-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -400,7 +527,9 @@
         </div>
       </div>
       <div class="sequence-slots" id="sequence-slots" aria-label="저장된 코드 슬롯"></div>
+      <div class="diatonic-section" id="diatonic-section" aria-label="조성 내 화음"></div>
       <div class="chord-sections" id="chord-grid" aria-label="코드 선택"></div>
+      <div class="theory-panel" id="theory-panel" aria-live="polite"></div>
       <div class="keyboard-wrap">
         <div class="keyboard" id="keyboard" aria-label="건반"></div>
       </div>
@@ -453,6 +582,76 @@
         },
       ];
       const chordTypes = chordGroups.flatMap((group) => group.types);
+
+      const chordInfo = {
+        major: {
+          structure: "근음 + 장3도(4반음) + 완전5도(7반음)",
+          character: "밝고 안정적",
+          usage: "으뜸화음(I), 버금딸림화음(IV), 딸림화음(V)으로 사용",
+        },
+        minor: {
+          structure: "근음 + 단3도(3반음) + 완전5도(7반음)",
+          character: "어둡고 서정적",
+          usage: "장조의 vi·ii·iii, 단조의 i로 사용",
+        },
+        dim: {
+          structure: "근음 + 단3도(3반음) + 감5도(6반음)",
+          character: "불안하고 강한 긴장감",
+          usage: "이끔화음(vii°)으로 으뜸화음으로 해결",
+        },
+        aug: {
+          structure: "근음 + 장3도(4반음) + 증5도(8반음)",
+          character: "신비롭고 불안정",
+          usage: "경과 화음, 반음계적 진행에 사용",
+        },
+        "7": {
+          structure: "근음 + 장3도 + 완전5도 + 단7도(10반음)",
+          character: "강한 긴장감, 해결 욕구",
+          usage: "딸림7화음(V7) — 가장 강한 종지 형성",
+        },
+        "major-7": {
+          structure: "근음 + 장3도 + 완전5도 + 장7도(11반음)",
+          character: "밝고 달콤한 긴장",
+          usage: "으뜸(Imaj7), 버금딸림(IVmaj7) — 재즈·팝 기본",
+        },
+        "minor-7": {
+          structure: "근음 + 단3도 + 완전5도 + 단7도",
+          character: "부드럽고 세련된 어두움",
+          usage: "ii-V-I 진행의 ii7, 재즈 필수 화음",
+        },
+        sus4: {
+          structure: "근음 + 완전4도(5반음) + 완전5도(7반음)",
+          character: "열린 느낌, 해결 대기",
+          usage: "Major로 해결되기 전 긴장 유지",
+        },
+        add9: {
+          structure: "근음 + 장3도 + 완전5도 + 장9도(14반음)",
+          character: "넓고 밝은 색채감",
+          usage: "팝·록에서 I, IV의 색채 변형으로 자주 사용",
+        },
+        "6": {
+          structure: "근음 + 장3도 + 완전5도 + 장6도(9반음)",
+          character: "달콤하고 레트로한 느낌",
+          usage: "으뜸화음 대체, 1950년대 팝·재즈 스타일",
+        },
+        "9": {
+          structure: "근음 + 장3도 + 완전5도 + 단7도 + 장9도",
+          character: "풍부하고 재즈풍",
+          usage: "재즈에서 V9, I9으로 색채 표현",
+        },
+      };
+
+      const majorScaleIntervals = [0, 2, 4, 5, 7, 9, 11];
+      const diatonicDegrees = [
+        { roman: "I", typeId: "major" },
+        { roman: "ii", typeId: "minor" },
+        { roman: "iii", typeId: "minor" },
+        { roman: "IV", typeId: "major" },
+        { roman: "V", typeId: "major" },
+        { roman: "vi", typeId: "minor" },
+        { roman: "vii°", typeId: "dim" },
+      ];
+
       const keys = buildKeyboard(60, 86);
 
       const rootSelect = document.querySelector("#root-select");
@@ -463,11 +662,14 @@
       const recordButton = document.querySelector("#record-button");
       const sequenceSlotsElement = document.querySelector("#sequence-slots");
       const statusOutput = document.querySelector("#status");
+      const diatonicSectionEl = document.querySelector("#diatonic-section");
+      const theoryPanelEl = document.querySelector("#theory-panel");
       let audioContext;
       let masterInput;
       let selectedRoot = rootOptions[0];
       let selectedChordType = chordTypes[0];
       let selectedChord = buildChord(selectedRoot, selectedChordType);
+      let activeDiatonicDegree = null;
       let isSequencePlaying = false;
       let sequenceIndex = 0;
       let sequenceTimer;
@@ -645,9 +847,20 @@
       }
 
       function updatePressedKeys(notes) {
+        const roleLabels = ["R", "3", "5", "7", "9"];
+        const chordNoteClasses = selectedChord.notes.map((n) => n.replace(/\d+$/, ""));
+
         document.querySelectorAll(".key").forEach((key) => {
-          key.classList.toggle("is-pressed", notes.includes(key.dataset.note));
+          const isPressed = notes.includes(key.dataset.note);
+          key.classList.toggle("is-pressed", isPressed);
+          const roleEl = key.querySelector(".key-role");
+          if (roleEl) {
+            const noteClass = key.dataset.note?.replace(/\d+$/, "");
+            const idx = chordNoteClasses.indexOf(noteClass);
+            roleEl.textContent = isPressed && idx >= 0 ? (roleLabels[idx] ?? "") : "";
+          }
         });
+
         document.querySelectorAll(".chord-button").forEach((button) => {
           const isPlaying = [...activeSources.values()].some(
             (source) => source.chordName === button.dataset.chord
@@ -714,6 +927,8 @@
         selectedChord = chord;
         renderChords();
         renderNotes();
+        renderTheoryPanel();
+        renderDiatonicSection();
         updatePressedKeys(getHeldNotes());
       }
 
@@ -845,13 +1060,66 @@
         playSequenceStep();
       }
 
+      function renderDiatonicSection() {
+        const keyName = selectedRoot.label;
+        diatonicSectionEl.innerHTML = `
+          <p class="chord-section-title">${keyName} 장조 — 온음계 화음</p>
+          <div class="diatonic-grid">
+            ${diatonicDegrees
+              .map((degree, i) => {
+                const rootPitch = (selectedRoot.pitch + majorScaleIntervals[i]) % 12;
+                const rootOpt = rootOptions.find((r) => r.pitch === rootPitch);
+                const type = chordTypes.find((t) => t.id === degree.typeId);
+                const chord = buildChord(rootOpt, type);
+                const isActive = activeDiatonicDegree === i;
+                return `
+                  <button
+                    class="diatonic-button${isActive ? " is-active" : ""}"
+                    type="button"
+                    data-degree="${i}"
+                    data-chord="${chord.name}"
+                    aria-pressed="${isActive}"
+                    aria-label="${chord.name}, ${degree.roman}"
+                  >
+                    <span class="diatonic-roman">${degree.roman}</span>
+                    <span class="diatonic-name">${rootOpt.name}</span>
+                  </button>
+                `;
+              })
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderTheoryPanel() {
+        const info = chordInfo[selectedChord.type?.id];
+        if (!info) {
+          theoryPanelEl.innerHTML = "";
+          return;
+        }
+        theoryPanelEl.innerHTML = `
+          <p class="theory-row">
+            <span class="theory-label">구조</span>
+            ${info.structure}
+          </p>
+          <p class="theory-row theory-character">
+            <span class="theory-label">성격</span>
+            ${info.character}
+          </p>
+          <p class="theory-row">
+            <span class="theory-label">활용</span>
+            ${info.usage}
+          </p>
+        `;
+      }
+
       function renderChords() {
         chordGrid.innerHTML = chordGroups
           .map((group) => {
             const buttons = group.types
               .map((type) => {
                 const chord = buildChord(selectedRoot, type);
-                const isActive = type.id === selectedChordType.id;
+                const isActive = activeDiatonicDegree === null && type.id === selectedChordType.id;
                 return `
                   <button
                     class="chord-button ${isActive ? "is-active" : ""}"
@@ -895,7 +1163,8 @@
           ...whiteKeys.map(
             (key) => `
               <button class="key white" type="button" data-note="${key.note}" aria-label="${key.note}">
-                <span>${key.label}</span>
+                <span class="key-role"></span>
+                <span class="key-label">${key.label}</span>
               </button>
             `
           ),
@@ -908,7 +1177,8 @@
                 data-note="${key.note}"
                 aria-label="${key.note}"
               >
-                <span>${key.label}</span>
+                <span class="key-role"></span>
+                <span class="key-label">${key.label}</span>
               </button>
             `;
           }),
@@ -929,6 +1199,7 @@
         const type = chordTypes.find((item) => item.id === button.dataset.chordType);
         if (!type) return;
         selectedChordType = type;
+        activeDiatonicDegree = null;
         const chord = buildChord(selectedRoot, type);
         selectChord(chord);
         holdNotes(`pointer-${event.pointerId}`, chord.notes, chord.name);
@@ -957,6 +1228,7 @@
         const type = chordTypes.find((item) => item.id === button.dataset.chordType);
         if (!type) return;
         selectedChordType = type;
+        activeDiatonicDegree = null;
         const chord = buildChord(selectedRoot, type);
         selectChord(chord);
         holdNotes(`key-${chord.name}`, chord.notes, chord.name);
@@ -986,13 +1258,53 @@
         releaseNotes(`key-${key.dataset.note}`);
       });
 
+      diatonicSectionEl.addEventListener("pointerdown", (event) => {
+        const button = event.target.closest(".diatonic-button");
+        if (!button || event.button > 0) return;
+        event.preventDefault();
+        const degree = Number(button.dataset.degree);
+        const rootPitch = (selectedRoot.pitch + majorScaleIntervals[degree]) % 12;
+        const rootOpt = rootOptions.find((r) => r.pitch === rootPitch);
+        const type = chordTypes.find((t) => t.id === diatonicDegrees[degree].typeId);
+        activeDiatonicDegree = degree;
+        const chord = buildChord(rootOpt, type);
+        selectChord(chord);
+        holdNotes(`pointer-${event.pointerId}`, chord.notes, chord.name);
+      });
+
+      diatonicSectionEl.addEventListener("keydown", (event) => {
+        if (event.repeat || ![" ", "Enter"].includes(event.key)) return;
+        const button = event.target.closest(".diatonic-button");
+        if (!button) return;
+        event.preventDefault();
+        const degree = Number(button.dataset.degree);
+        const rootPitch = (selectedRoot.pitch + majorScaleIntervals[degree]) % 12;
+        const rootOpt = rootOptions.find((r) => r.pitch === rootPitch);
+        const type = chordTypes.find((t) => t.id === diatonicDegrees[degree].typeId);
+        activeDiatonicDegree = degree;
+        const chord = buildChord(rootOpt, type);
+        selectChord(chord);
+        holdNotes(`key-${chord.name}`, chord.notes, chord.name);
+      });
+
+      diatonicSectionEl.addEventListener("keyup", (event) => {
+        if (![" ", "Enter"].includes(event.key)) return;
+        const button = event.target.closest(".diatonic-button");
+        if (!button) return;
+        event.preventDefault();
+        releaseNotes(`key-${button.dataset.chord}`);
+      });
+
       rootSelect.addEventListener("change", () => {
         const nextRoot = rootOptions.find((root) => root.pitch === Number(rootSelect.value));
         if (!nextRoot) return;
         selectedRoot = nextRoot;
+        activeDiatonicDegree = null;
         selectedChord = buildChord(selectedRoot, selectedChordType);
         renderChords();
         renderNotes();
+        renderTheoryPanel();
+        renderDiatonicSection();
         updatePressedKeys(getHeldNotes());
       });
 
@@ -1016,6 +1328,8 @@
       renderChords();
       renderKeyboard();
       renderNotes();
+      renderTheoryPanel();
+      renderDiatonicSection();
       renderSequenceSlots();
     </script>
   </body>
