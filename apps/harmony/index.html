@@ -442,6 +442,223 @@
         font-weight: 900;
       }
 
+      /* ── Tabs ── */
+
+      .harmony-tabs {
+        display: flex;
+        gap: 4px;
+        margin: 20px 0 0;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 0;
+      }
+
+      .harmony-tab {
+        padding: 8px 16px 10px;
+        border: none;
+        border-bottom: 2px solid transparent;
+        background: none;
+        color: var(--muted);
+        font: inherit;
+        font-size: 0.88rem;
+        font-weight: 900;
+        cursor: pointer;
+        margin-bottom: -1px;
+        transition: color 0.12s ease, border-color 0.12s ease;
+      }
+
+      .harmony-tab:hover {
+        color: var(--text);
+      }
+
+      .harmony-tab.is-active {
+        color: var(--accent-strong);
+        border-bottom-color: var(--accent);
+      }
+
+      /* ── Theory guide ── */
+
+      .guide-sections {
+        display: grid;
+        gap: 0;
+        margin: 24px 0 0;
+      }
+
+      .guide-section {
+        padding: 0 0 28px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 28px;
+      }
+
+      .guide-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+      }
+
+      .guide-section-title {
+        margin: 0 0 12px;
+        font-size: 1rem;
+        font-weight: 900;
+        color: var(--text);
+      }
+
+      .guide-text {
+        margin: 0 0 10px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--text);
+        line-height: 1.65;
+      }
+
+      .guide-text:last-child {
+        margin-bottom: 0;
+      }
+
+      .guide-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.84rem;
+        margin: 10px 0;
+      }
+
+      .guide-table th {
+        padding: 7px 10px;
+        background: var(--surface-strong);
+        color: var(--muted);
+        font-size: 0.75rem;
+        font-weight: 900;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .guide-table td {
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--line);
+        color: var(--text);
+        font-weight: 500;
+        line-height: 1.4;
+      }
+
+      .guide-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .guide-table .row-tonic td { background: #f0fdf9; }
+      .guide-table .row-subdominant td { background: #fefce8; }
+      .guide-table .row-dominant td { background: #fff1f2; }
+
+      .guide-tip {
+        margin: 10px 0 0;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #f0fdf9;
+        border: 1px solid #a7f3d0;
+        font-size: 0.84rem;
+        font-weight: 500;
+        color: #065f46;
+        line-height: 1.55;
+      }
+
+      .guide-scale {
+        margin: 8px 0;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--surface-strong);
+        font-size: 0.96rem;
+        font-weight: 900;
+        color: var(--accent-strong);
+        letter-spacing: 0.05em;
+        text-align: center;
+      }
+
+      .guide-function-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin: 12px 0 0;
+      }
+
+      .guide-function {
+        border-radius: 8px;
+        padding: 12px 10px;
+        border: 1px solid var(--line);
+      }
+
+      .guide-function.tonic { background: #f0fdf9; border-color: #a7f3d0; }
+      .guide-function.subdominant { background: #fefce8; border-color: #fde68a; }
+      .guide-function.dominant { background: #fff1f2; border-color: #fecdd3; }
+
+      .guide-function-name {
+        margin: 0 0 4px;
+        font-size: 0.78rem;
+        font-weight: 900;
+        color: var(--text);
+      }
+
+      .guide-function-chords {
+        margin: 0 0 6px;
+        font-size: 1rem;
+        font-weight: 900;
+        color: var(--accent-strong);
+      }
+
+      .guide-function-desc {
+        margin: 0;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .guide-progression {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .guide-progression:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .progression-name {
+        margin: 0 0 8px;
+        font-size: 0.86rem;
+        font-weight: 900;
+        color: var(--text);
+      }
+
+      .progression-chords {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 0 0 8px;
+      }
+
+      .prog-chord {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 6px;
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        font-size: 0.92rem;
+        font-weight: 900;
+        color: var(--accent-strong);
+      }
+
+      .prog-arrow {
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 900;
+      }
+
+      .progression-desc {
+        margin: 0;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
       @media (max-width: 700px) {
         .harmony-app {
           padding: 14px;
@@ -495,6 +712,10 @@
         .key.black {
           width: 5.8%;
         }
+
+        .guide-function-grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
@@ -507,6 +728,13 @@
         </div>
         <p class="harmony-status" id="status">C Major</p>
       </div>
+
+      <div class="harmony-tabs" role="tablist">
+        <button class="harmony-tab is-active" type="button" role="tab" data-tab="play" aria-selected="true">연주</button>
+        <button class="harmony-tab" type="button" role="tab" data-tab="guide" aria-selected="false">이론 가이드</button>
+      </div>
+
+      <div id="view-play">
 
       <div class="harmony-controls">
         <label class="root-control">
@@ -534,6 +762,159 @@
         <div class="keyboard" id="keyboard" aria-label="건반"></div>
       </div>
       <div class="harmony-notes" id="notes" aria-live="polite"></div>
+
+      </div><!-- /#view-play -->
+
+      <div id="view-guide" hidden>
+        <div class="guide-sections">
+
+          <section class="guide-section">
+            <h2 class="guide-section-title">1. 음정 — 음과 음 사이의 거리</h2>
+            <p class="guide-text">
+              피아노 건반에서 <strong>바로 옆 건반까지의 거리가 1반음(半音)</strong>입니다.
+              흰 건반과 검은 건반을 모두 포함해서 셉니다.
+            </p>
+            <table class="guide-table">
+              <thead>
+                <tr><th>반음 수</th><th>음정 이름</th><th>예 (C 기준)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>1</td><td>단2도</td><td>C → C#</td></tr>
+                <tr><td>2</td><td>장2도</td><td>C → D</td></tr>
+                <tr><td>3</td><td>단3도</td><td>C → D#</td></tr>
+                <tr><td>4</td><td>장3도</td><td>C → E</td></tr>
+                <tr><td>5</td><td>완전4도</td><td>C → F</td></tr>
+                <tr><td>6</td><td>감5도 (tritone)</td><td>C → F#</td></tr>
+                <tr><td>7</td><td>완전5도</td><td>C → G</td></tr>
+                <tr><td>8</td><td>증5도</td><td>C → G#</td></tr>
+                <tr><td>9</td><td>장6도</td><td>C → A</td></tr>
+                <tr><td>10</td><td>단7도</td><td>C → A#</td></tr>
+                <tr><td>11</td><td>장7도</td><td>C → B</td></tr>
+                <tr><td>12</td><td>옥타브</td><td>C → C(다음)</td></tr>
+              </tbody>
+            </table>
+            <p class="guide-tip">💡 코드를 만들 때 3도와 5도가 핵심입니다. 3도가 4반음이면 밝은 소리(Major), 3반음이면 어두운 소리(Minor)가 됩니다.</p>
+          </section>
+
+          <section class="guide-section">
+            <h2 class="guide-section-title">2. 코드의 구조</h2>
+            <p class="guide-text">코드는 <strong>근음(Root) 위에 음정을 쌓아</strong> 만듭니다. 어떤 음정을 쌓느냐에 따라 코드의 종류와 느낌이 결정됩니다.</p>
+            <table class="guide-table">
+              <thead>
+                <tr><th>코드</th><th>반음 구조</th><th>성격</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Major</strong></td><td>0 · 4 · 7</td><td>밝고 안정적</td></tr>
+                <tr><td><strong>Minor</strong></td><td>0 · 3 · 7</td><td>어둡고 서정적</td></tr>
+                <tr><td><strong>Dim</strong></td><td>0 · 3 · 6</td><td>불안하고 긴장감</td></tr>
+                <tr><td><strong>Aug</strong></td><td>0 · 4 · 8</td><td>신비롭고 불안정</td></tr>
+                <tr><td><strong>7 (Dominant 7th)</strong></td><td>0 · 4 · 7 · 10</td><td>강한 긴장, 해결 욕구</td></tr>
+                <tr><td><strong>Major 7</strong></td><td>0 · 4 · 7 · 11</td><td>달콤한 긴장</td></tr>
+                <tr><td><strong>Minor 7</strong></td><td>0 · 3 · 7 · 10</td><td>부드러운 어두움</td></tr>
+                <tr><td><strong>Sus4</strong></td><td>0 · 5 · 7</td><td>열린 느낌, 해결 대기</td></tr>
+                <tr><td><strong>Add9</strong></td><td>0 · 4 · 7 · 14</td><td>넓고 밝은 색채</td></tr>
+              </tbody>
+            </table>
+            <p class="guide-tip">💡 연주 탭에서 코드를 클릭할 때마다 건반에 R(근음) · 3 · 5 · 7 표시가 나타나니, 구조를 눈으로 확인해보세요.</p>
+          </section>
+
+          <section class="guide-section">
+            <h2 class="guide-section-title">3. 조성(Key)과 온음계 화음</h2>
+            <p class="guide-text"><strong>조성</strong>이란 음악이 중심으로 삼는 '집'입니다. C장조라면 C가 가장 안정된 음이고, 멀리 나갔다가도 결국 C로 돌아오고 싶어집니다.</p>
+            <p class="guide-text"><strong>장음계(Major Scale)</strong>는 조성의 7개 음입니다. C장조 기준:</p>
+            <div class="guide-scale">C — D — E — F — G — A — B — (C)</div>
+            <p class="guide-text">이 7개 음 각각 위에 코드를 쌓으면 <strong>온음계 화음 7개</strong>가 생깁니다. 이 코드들이 그 조성 안에서 자연스럽게 어울리는 코드들입니다.</p>
+            <table class="guide-table">
+              <thead>
+                <tr><th>로마 숫자</th><th>C장조</th><th>종류</th><th>기능</th></tr>
+              </thead>
+              <tbody>
+                <tr class="row-tonic"><td><strong>I</strong></td><td>C Major</td><td>Major</td><td>으뜸 — 집, 안정</td></tr>
+                <tr><td>ii</td><td>D Minor</td><td>Minor</td><td>버금딸림 방향</td></tr>
+                <tr><td>iii</td><td>E Minor</td><td>Minor</td><td>으뜸 방향</td></tr>
+                <tr class="row-subdominant"><td><strong>IV</strong></td><td>F Major</td><td>Major</td><td>버금딸림 — 움직임</td></tr>
+                <tr class="row-dominant"><td><strong>V</strong></td><td>G Major</td><td>Major</td><td>딸림 — 긴장</td></tr>
+                <tr><td>vi</td><td>A Minor</td><td>Minor</td><td>으뜸 방향</td></tr>
+                <tr><td>vii°</td><td>B Dim</td><td>Dim</td><td>딸림 방향</td></tr>
+              </tbody>
+            </table>
+            <p class="guide-tip">💡 대문자(I, IV, V) = 장화음 / 소문자(ii, iii, vi) = 단화음. 로마 숫자를 쓰면 어떤 조성에서든 같은 기능을 가진 코드끼리 비교할 수 있습니다.</p>
+          </section>
+
+          <section class="guide-section">
+            <h2 class="guide-section-title">4. 코드의 세 가지 기능</h2>
+            <p class="guide-text">모든 화음은 아래 세 기능 중 하나를 합니다. 이 긴장과 이완의 흐름이 음악의 감정을 만듭니다.</p>
+            <div class="guide-function-grid">
+              <div class="guide-function tonic">
+                <p class="guide-function-name">으뜸 (Tonic)</p>
+                <p class="guide-function-chords">I · iii · vi</p>
+                <p class="guide-function-desc">안정감. 곡이 여기서 시작하고 끝납니다. '집'.</p>
+              </div>
+              <div class="guide-function subdominant">
+                <p class="guide-function-name">버금딸림 (Subdominant)</p>
+                <p class="guide-function-chords">IV · ii</p>
+                <p class="guide-function-desc">움직임의 시작. 안정에서 긴장으로 나아가는 단계.</p>
+              </div>
+              <div class="guide-function dominant">
+                <p class="guide-function-name">딸림 (Dominant)</p>
+                <p class="guide-function-chords">V · vii°</p>
+                <p class="guide-function-desc">강한 긴장감. 으뜸으로 해결되고 싶어합니다.</p>
+              </div>
+            </div>
+            <p class="guide-text" style="margin-top:14px">기본 흐름: <strong>으뜸 → 버금딸림 → 딸림 → 으뜸</strong> (I → IV → V → I)</p>
+          </section>
+
+          <section class="guide-section">
+            <h2 class="guide-section-title">5. 자주 쓰이는 코드 진행</h2>
+
+            <div class="guide-progression">
+              <p class="progression-name">완전 종지</p>
+              <div class="progression-chords">
+                <span class="prog-chord">I</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">IV</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">V</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">I</span>
+              </div>
+              <p class="progression-desc">C장조: C → F → G → C. 가장 기본적인 진행. 블루스·록·컨트리의 뼈대.</p>
+            </div>
+
+            <div class="guide-progression">
+              <p class="progression-name">팝 진행</p>
+              <div class="progression-chords">
+                <span class="prog-chord">I</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">V</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">vi</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">IV</span>
+              </div>
+              <p class="progression-desc">C장조: C → G → Am → F. 수천 곡에 쓰인 현대 팝의 공식.</p>
+            </div>
+
+            <div class="guide-progression">
+              <p class="progression-name">ii-V-I (재즈 기본)</p>
+              <div class="progression-chords">
+                <span class="prog-chord">ii</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">V7</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">I</span>
+              </div>
+              <p class="progression-desc">C장조: Dm → G7 → C. 재즈의 핵심 진행. V를 7화음으로 쓸수록 해결감이 강해집니다.</p>
+            </div>
+
+            <div class="guide-progression">
+              <p class="progression-name">vi-IV-I-V</p>
+              <div class="progression-chords">
+                <span class="prog-chord">vi</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">IV</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">I</span><span class="prog-arrow">→</span>
+                <span class="prog-chord">V</span>
+              </div>
+              <p class="progression-desc">C장조: Am → F → C → G. 팝 진행의 변형. 단조적 색채로 시작해 밝게 전환됩니다.</p>
+            </div>
+
+          </section>
+
+        </div>
+      </div><!-- /#view-guide -->
+
     </main>
 
     <script>
@@ -1322,6 +1703,18 @@
         const button = event.target.closest(".slot-delete");
         if (!button) return;
         deleteSlot(Number(button.dataset.slot));
+      });
+
+      document.querySelector(".harmony-tabs").addEventListener("click", (event) => {
+        const tab = event.target.closest(".harmony-tab");
+        if (!tab) return;
+        const target = tab.dataset.tab;
+        document.querySelectorAll(".harmony-tab").forEach((t) => {
+          t.classList.toggle("is-active", t.dataset.tab === target);
+          t.setAttribute("aria-selected", t.dataset.tab === target ? "true" : "false");
+        });
+        document.getElementById("view-play").hidden = target !== "play";
+        document.getElementById("view-guide").hidden = target !== "guide";
       });
 
       renderRootOptions();
