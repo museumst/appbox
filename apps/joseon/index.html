@@ -43,6 +43,39 @@
         margin-top: 22px; overflow-x: auto;
         -webkit-overflow-scrolling: touch; padding-bottom: 12px;
       }
+
+      /* 모바일: 단일 2D 스크롤 컨테이너로 전환 */
+      @media (max-width: 680px) {
+        html, body.joseon-app {
+          height: 100%;
+          overflow: hidden;
+        }
+        body.joseon-app {
+          display: flex;
+          flex-direction: column;
+          padding: 16px 16px 0;
+          box-sizing: border-box;
+        }
+        .joseon-panel {
+          flex: 1;
+          width: 100%;
+          border: none;
+          border-radius: 0;
+          padding: 0;
+          background: transparent;
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
+          overflow: hidden;
+        }
+        .joseon-scroll {
+          flex: 1;
+          overflow: auto;
+          min-height: 0;
+          margin-top: 12px;
+          padding-bottom: 24px;
+        }
+      }
       #joseon-svg { display: block; margin: 0 auto; }
       .tree-line { stroke: #9dbdb8; stroke-width: 1.5; fill: none; }
 
