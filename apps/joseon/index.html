@@ -40,11 +40,9 @@
       .joseon-score .score-wrong { color: #d63c3c; }
 
       .joseon-scroll {
-        margin-top: 22px; overflow: auto;
+        margin-top: 22px; overflow-x: auto;
         -webkit-overflow-scrolling: touch; padding-bottom: 12px;
       }
-      html { overflow: hidden; height: 100%; }
-      body.joseon-app { overflow: hidden; height: 100%; }
 
       #joseon-svg { display: block; margin: 0 auto; }
       .tree-line { stroke: #9dbdb8; stroke-width: 1.5; fill: none; }
@@ -523,31 +521,6 @@
 
       btnQuiz.addEventListener('click', () => setQuizMode(!quizMode));
 
-      // joseon-scroll이 남은 뷰포트 높이를 채우도록 동적으로 설정
-      const scrollEl = document.querySelector('.joseon-scroll');
-      function updateScrollHeight() {
-        const top = scrollEl.getBoundingClientRect().top;
-        scrollEl.style.height = (window.innerHeight - top - 16) + 'px';
-      }
-      window.addEventListener('resize', updateScrollHeight);
-      updateScrollHeight();
-
-      // 세로 스크롤 → 가로 성분 추가 (브라우저가 세로는 자동 처리)
-      const DIAGONAL_RATIO = 0.6;
-      let touchStartY = 0;
-      scrollEl.addEventListener('touchstart', e => {
-        touchStartY = e.touches[0].clientY;
-      }, { passive: true });
-      scrollEl.addEventListener('touchmove', e => {
-        const dy = touchStartY - e.touches[0].clientY;
-        touchStartY = e.touches[0].clientY;
-        scrollEl.scrollLeft += dy * DIAGONAL_RATIO; // 가로 성분만 추가
-      }, { passive: true });
-
-      // 데스크탑 휠: 가로 성분 추가 (세로는 브라우저 기본 동작)
-      scrollEl.addEventListener('wheel', e => {
-        scrollEl.scrollLeft += e.deltaY * DIAGONAL_RATIO;
-      }, { passive: true });
 
       document.addEventListener('click', e => {
         if (!infoPanel.contains(e.target) && !quizPanel.contains(e.target) && e.target !== btnQuiz) {
