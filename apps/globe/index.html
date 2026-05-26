@@ -685,8 +685,10 @@
           const sizeMap = { large: isMobile ? 13 : Math.max(11, Math.min(17, 13 * zoomRatio)),
                             medium: isMobile ? 11 : Math.max(9, Math.min(14, 11 * zoomRatio)),
                             small:  isMobile ? 9  : Math.max(8, Math.min(12, 9  * zoomRatio)) };
+          const rotate = proj.rotate();
+          const viewCenter = [-rotate[0], -rotate[1]];
           const oceanData = OCEANS.map(o => ({ ...o, pos: proj([o.lon, o.lat]) }))
-                                   .filter(o => o.pos !== null);
+                                   .filter(o => o.pos !== null && d3.geoDistance(viewCenter, [o.lon, o.lat]) < Math.PI / 2);
           labelsG.selectAll('text')
             .data(oceanData, d => d.id)
             .join('text')
