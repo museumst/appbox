@@ -197,6 +197,39 @@ const apps = [
     statusLabel: "실행 가능",
     tags: ["music", "chord", "keyboard"],
   },
+  {
+    title: "명상 사운드 플레이어",
+    description: "수딩 사운드를 겹쳐 믹싱하고 BGM을 함께 재생하는 명상용 오디오 플레이어입니다.",
+    i18n: {
+      ko: {
+        title: "명상 사운드 플레이어",
+        description: "수딩 사운드를 겹쳐 믹싱하고 BGM을 함께 재생하는 명상용 오디오 플레이어입니다.",
+      },
+      en: {
+        title: "Meditation Sound Player",
+        description: "A meditation audio player for layering soothing sounds with background music.",
+      },
+      ja: {
+        title: "瞑想サウンドプレイヤー",
+        description: "癒やしの環境音を重ね、BGMと一緒に再生できる瞑想用オーディオプレイヤーです。",
+      },
+      zh: {
+        title: "冥想声音播放器",
+        description: "一款可叠加舒缓环境音并播放背景音乐的冥想音频播放器。",
+      },
+      es: {
+        title: "Reproductor de Meditación",
+        description: "Un reproductor para meditación que mezcla sonidos relajantes con música de fondo.",
+      },
+    },
+    category: "music",
+    categoryLabel: "음악",
+    thumbnail: "meditation",
+    app_url: "apps/meditation/index.html",
+    status: "ready",
+    statusLabel: "실행 가능",
+    tags: ["meditation", "audio", "bgm", "ambient"],
+  },
 ];
 
 const uiText = {

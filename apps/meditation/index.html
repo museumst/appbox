@@ -1,0 +1,1386 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>명상 사운드 플레이어</title>
+    <link rel="stylesheet" href="../../assets/styles.css?v=20260527-meditation" />
+    <style>
+      :root {
+        --med-bg: #f5f5f7;
+        --med-surface: #ffffff;
+        --med-elevated: #f0f1f4;
+        --med-primary: #3182f6;
+        --med-text: #1a1a1a;
+        --med-subtext: #8e8e93;
+        --med-border: #e5e7eb;
+        --med-success: #00b87a;
+        --med-danger: #ff5c5c;
+        --player-bg: #27272a;
+        --player-elevated: #1a1b1f;
+        --player-track: #11131a;
+        --player-soft: #2b2e36;
+        --player-text: #f8fafc;
+        --player-subtext: #d1d5db;
+      }
+
+      body[data-theme="dark"] {
+        --med-bg: #18181b;
+        --med-surface: #27272a;
+        --med-elevated: #3f3f46;
+        --med-primary: #60a5fa;
+        --med-text: #f4f4f5;
+        --med-subtext: #a1a1aa;
+        --med-border: #46464f;
+        --med-success: #34d399;
+        --med-danger: #fb7185;
+      }
+
+      body.meditation-app {
+        min-height: 100vh;
+        padding: 18px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(245, 245, 247, 0.92)),
+          var(--med-bg);
+        color: var(--med-text);
+      }
+
+      body[data-theme="dark"].meditation-app {
+        background:
+          linear-gradient(180deg, rgba(39, 39, 42, 0.88), rgba(24, 24, 27, 0.98)),
+          var(--med-bg);
+      }
+
+      .meditation-shell {
+        display: grid;
+        width: min(1120px, 100%);
+        min-height: calc(100vh - 36px);
+        grid-template-rows: auto 1fr;
+        gap: 16px;
+      }
+
+      .meditation-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .title-block {
+        min-width: 0;
+      }
+
+      .title-block h1 {
+        margin: 0;
+        max-width: none;
+        color: var(--med-text);
+        font-size: clamp(1.72rem, 4vw, 3.1rem);
+        line-height: 1.02;
+        letter-spacing: 0;
+        word-break: keep-all;
+      }
+
+      .session-status {
+        margin: 8px 0 0;
+        min-height: 1.35rem;
+        color: var(--med-subtext);
+        font-size: 0.9rem;
+        font-weight: 800;
+      }
+
+      .header-actions {
+        display: flex;
+        flex: 0 0 auto;
+        gap: 8px;
+      }
+
+      .round-icon-button {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border: 1px solid var(--med-border);
+        border-radius: 50%;
+        background: var(--med-surface);
+        color: var(--med-text);
+        cursor: pointer;
+      }
+
+      .round-icon-button:hover,
+      .round-icon-button:focus-visible {
+        border-color: var(--med-primary);
+        color: var(--med-primary);
+        outline: none;
+      }
+
+      .round-icon-button svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .meditation-layout {
+        display: grid;
+        grid-template-columns: minmax(314px, 410px) minmax(0, 1fr);
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .player-shell {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        border-radius: 36px;
+        padding: 18px 20px 20px;
+        background: var(--player-bg);
+        color: var(--player-text);
+        box-shadow: 0 14px 22px rgba(0, 0, 0, 0.2);
+      }
+
+      .now-playing {
+        display: grid;
+        width: 100%;
+        grid-template-columns: 68px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+      }
+
+      .artwork {
+        width: 68px;
+        height: 68px;
+        border-radius: 12px;
+        object-fit: cover;
+        background: #11131a;
+      }
+
+      .track-kicker,
+      .volume-label,
+      .time-labels {
+        color: var(--player-subtext);
+        font-size: 0.75rem;
+        font-weight: 800;
+      }
+
+      .track-title {
+        margin: 4px 0 0;
+        overflow: hidden;
+        color: var(--player-text);
+        font-size: 1.18rem;
+        font-weight: 900;
+        line-height: 1.18;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .library-tabs,
+      .mode-bar {
+        position: relative;
+        display: flex;
+        width: 100%;
+        gap: 5px;
+        border-radius: 20px;
+        padding: 5px;
+        background: #1a1b1f;
+      }
+
+      .mode-bar {
+        border-radius: 24px;
+        padding: 4px;
+        gap: 4px;
+        background: #11131a;
+      }
+
+      .tab-indicator,
+      .mode-indicator {
+        position: absolute;
+        top: 5px;
+        bottom: 5px;
+        left: 5px;
+        width: calc((100% - 15px) / 2);
+        border-radius: 15px;
+        background: #3a3a3f;
+        transition:
+          transform 180ms ease,
+          width 180ms ease;
+      }
+
+      .mode-indicator {
+        top: 4px;
+        bottom: 4px;
+        left: 4px;
+        width: calc((100% - 16px) / 3);
+        border-radius: 18px;
+        background: #212332;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+      }
+
+      .library-tabs[data-active="sound"] .tab-indicator {
+        transform: translateX(calc(100% + 5px));
+      }
+
+      .mode-bar[data-mode="repeat-all"] .mode-indicator {
+        transform: translateX(calc(100% + 4px));
+      }
+
+      .mode-bar[data-mode="repeat-one"] .mode-indicator {
+        transform: translateX(calc((100% + 4px) * 2));
+      }
+
+      .tab-button,
+      .mode-button {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        min-width: 0;
+        height: 50px;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 15px;
+        background: transparent;
+        color: #d1d5db;
+        cursor: pointer;
+        font-size: 0.88rem;
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      .mode-button {
+        height: 46px;
+        border-radius: 18px;
+        color: #6b7280;
+      }
+
+      .tab-button.is-active,
+      .mode-button.is-active {
+        color: #7dd3fc;
+      }
+
+      .mode-button svg {
+        width: 21px;
+        height: 21px;
+      }
+
+      .panel-stack {
+        display: grid;
+        width: 100%;
+        min-height: 204px;
+      }
+
+      .track-panel,
+      .sound-panel {
+        display: none;
+      }
+
+      .track-panel.is-active,
+      .sound-panel.is-active {
+        display: block;
+      }
+
+      .track-list {
+        display: grid;
+        width: 100%;
+        max-height: 272px;
+        min-height: 204px;
+        gap: 4px;
+        overflow: auto;
+        border-radius: 12px;
+        padding: 8px;
+        background: #f8fafc;
+      }
+
+      .track-row {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) 24px;
+        gap: 10px;
+        align-items: center;
+        min-height: 50px;
+        border: 0;
+        border-radius: 8px;
+        padding: 8px 10px;
+        background: transparent;
+        color: #0f172a;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .track-row:hover,
+      .track-row:focus-visible,
+      .track-row.is-active {
+        background: #275daa;
+        color: #ffffff;
+        outline: none;
+      }
+
+      .track-thumb {
+        width: 34px;
+        height: 34px;
+        border-radius: 6px;
+        object-fit: cover;
+        background: #e5e7eb;
+      }
+
+      .track-row-title {
+        overflow: hidden;
+        font-size: 0.95rem;
+        font-weight: 800;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .track-playing-dot {
+        width: 8px;
+        height: 8px;
+        margin-inline: auto;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0;
+      }
+
+      .track-row.is-active .track-playing-dot {
+        opacity: 1;
+      }
+
+      .sound-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .ambient-tile {
+        position: relative;
+        display: grid;
+        aspect-ratio: 1;
+        place-items: center;
+        overflow: hidden;
+        border: 0;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.06);
+        color: #9098a8;
+        cursor: ns-resize;
+        touch-action: none;
+      }
+
+      body:not([data-theme="dark"]) .ambient-tile {
+        background: rgba(0, 0, 0, 0.06);
+        color: #5f6776;
+      }
+
+      .ambient-fill {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 0;
+        background: var(--tile-fill, #3f3f46);
+        transition: height 80ms linear;
+      }
+
+      .ambient-icon {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        width: 58px;
+        height: 58px;
+        place-items: center;
+      }
+
+      .ambient-icon svg {
+        width: 42px;
+        height: 42px;
+        stroke: currentColor;
+      }
+
+      .ambient-label {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        left: 8px;
+        z-index: 1;
+        overflow: hidden;
+        color: currentColor;
+        font-size: 0.72rem;
+        font-weight: 900;
+        line-height: 1.1;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .progress-section {
+        display: grid;
+        width: 100%;
+        gap: 4px;
+      }
+
+      .progress-track {
+        position: relative;
+        height: 24px;
+        border-radius: 999px;
+        background: #2b2e36;
+        cursor: pointer;
+      }
+
+      .progress-fill {
+        position: absolute;
+        top: 9px;
+        left: 0;
+        width: 0;
+        height: 6px;
+        border-radius: 999px;
+        background: #60a5fa;
+      }
+
+      .progress-thumb {
+        position: absolute;
+        top: 4px;
+        left: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #f8fafc;
+      }
+
+      .time-labels {
+        display: flex;
+        justify-content: space-between;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .wheel-wrap {
+        position: relative;
+        display: grid;
+        place-items: center;
+        padding-top: 6px;
+      }
+
+      .wheel {
+        position: relative;
+        display: grid;
+        width: 238px;
+        height: 238px;
+        place-items: center;
+        border-radius: 50%;
+        background: #1a1b1f;
+        box-shadow: 0 8px 14px rgba(0, 0, 0, 0.24);
+      }
+
+      .wheel-button {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        border: 0;
+        background: transparent;
+        color: #f3f4f6;
+        cursor: pointer;
+      }
+
+      .wheel-button:hover,
+      .wheel-button:focus-visible {
+        color: #7dd3fc;
+        outline: none;
+      }
+
+      .wheel-button svg {
+        width: 28px;
+        height: 28px;
+      }
+
+      .wheel-button.prev {
+        top: 84px;
+        left: 22px;
+        width: 54px;
+        height: 54px;
+      }
+
+      .wheel-button.next {
+        top: 84px;
+        right: 22px;
+        width: 54px;
+        height: 54px;
+      }
+
+      .wheel-button.stop {
+        bottom: 18px;
+        left: 79px;
+        width: 80px;
+        height: 48px;
+      }
+
+      .center-button {
+        display: grid;
+        width: 92px;
+        height: 92px;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: #23242a;
+        color: #f3f4f6;
+        cursor: pointer;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18);
+      }
+
+      .center-button:hover,
+      .center-button:focus-visible {
+        color: #7dd3fc;
+        outline: none;
+      }
+
+      .center-button svg {
+        width: 34px;
+        height: 34px;
+      }
+
+      .volume-row {
+        display: grid;
+        width: 100%;
+        grid-template-columns: 36px minmax(0, 1fr) 3.5rem;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .volume-button {
+        display: grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: #1a1b1f;
+        color: #22c55e;
+        cursor: pointer;
+      }
+
+      .volume-button svg {
+        width: 19px;
+        height: 19px;
+      }
+
+      .volume-slider {
+        width: 100%;
+        accent-color: #60a5fa;
+      }
+
+      .sound-mixer {
+        display: grid;
+        min-width: 0;
+        align-content: start;
+        gap: 14px;
+        border: 1px solid var(--med-border);
+        border-radius: 24px;
+        padding: 18px;
+        background: var(--med-surface);
+      }
+
+      .sound-mixer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .sound-mixer-header h2 {
+        margin: 0;
+        color: var(--med-text);
+        font-size: clamp(1.12rem, 2.2vw, 1.6rem);
+        line-height: 1.15;
+      }
+
+      .ambient-total {
+        flex: 0 0 auto;
+        color: var(--med-subtext);
+        font-size: 0.85rem;
+        font-weight: 900;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .wide-sound-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .wide-sound-grid .ambient-tile {
+        background: var(--med-elevated);
+      }
+
+      .error-line {
+        min-height: 1.25rem;
+        margin: 0;
+        color: var(--med-danger);
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      @media (max-width: 840px) {
+        body.meditation-app {
+          place-items: start center;
+          padding: 14px;
+        }
+
+        .meditation-shell {
+          min-height: calc(100vh - 28px);
+        }
+
+        .meditation-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .sound-mixer {
+          order: -1;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .meditation-header {
+          align-items: start;
+        }
+
+        .header-actions {
+          flex-direction: column;
+        }
+
+        .player-shell,
+        .sound-mixer {
+          border-radius: 22px;
+          padding: 14px;
+        }
+
+        .wide-sound-grid,
+        .sound-grid {
+          gap: 8px;
+        }
+
+        .ambient-tile {
+          border-radius: 18px;
+        }
+
+        .ambient-icon {
+          width: 48px;
+          height: 48px;
+        }
+
+        .ambient-icon svg {
+          width: 34px;
+          height: 34px;
+        }
+
+        .wheel {
+          width: min(238px, 78vw);
+          height: min(238px, 78vw);
+        }
+      }
+    </style>
+  </head>
+  <body class="mini-app meditation-app" data-theme="dark">
+    <main class="meditation-shell" aria-label="명상 사운드 플레이어">
+      <header class="meditation-header">
+        <div class="title-block">
+          <p class="eyebrow">Meditation</p>
+          <h1>명상 사운드 플레이어</h1>
+          <p class="session-status" id="session-status">대기</p>
+        </div>
+        <div class="header-actions">
+          <button class="round-icon-button" type="button" id="theme-button" aria-label="테마 전환" title="테마 전환"></button>
+          <button class="round-icon-button" type="button" id="stop-all-button" aria-label="전체 정지" title="전체 정지"></button>
+        </div>
+      </header>
+
+      <section class="meditation-layout">
+        <section class="player-shell" aria-label="BGM 플레이어">
+          <div class="now-playing">
+            <img class="artwork" id="current-artwork" alt="" />
+            <div>
+              <div class="track-kicker">BGM</div>
+              <p class="track-title" id="current-title"></p>
+            </div>
+          </div>
+
+          <div class="library-tabs" id="library-tabs" data-active="music" aria-label="라이브러리">
+            <span class="tab-indicator" aria-hidden="true"></span>
+            <button class="tab-button is-active" type="button" data-tab="music">음악</button>
+            <button class="tab-button" type="button" data-tab="sound">사운드</button>
+          </div>
+
+          <div class="panel-stack">
+            <div class="track-panel is-active" id="music-panel">
+              <div class="track-list" id="track-list" aria-label="BGM 목록"></div>
+            </div>
+            <div class="sound-panel" id="sound-panel">
+              <div class="sound-grid" id="compact-sound-grid" aria-label="수딩 사운드 믹서"></div>
+            </div>
+          </div>
+
+          <div class="mode-bar" id="mode-bar" data-mode="repeat-all" aria-label="재생 모드">
+            <span class="mode-indicator" aria-hidden="true"></span>
+            <button class="mode-button" type="button" data-mode="shuffle" aria-label="셔플" title="셔플"></button>
+            <button class="mode-button is-active" type="button" data-mode="repeat-all" aria-label="전체 반복" title="전체 반복"></button>
+            <button class="mode-button" type="button" data-mode="repeat-one" aria-label="한 곡 반복" title="한 곡 반복"></button>
+          </div>
+
+          <div class="progress-section">
+            <div class="progress-track" id="progress-track" aria-label="재생 위치" role="slider" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0">
+              <span class="progress-fill" id="progress-fill"></span>
+              <span class="progress-thumb" id="progress-thumb"></span>
+            </div>
+            <div class="time-labels">
+              <span id="current-time">0:00</span>
+              <span id="duration-time">0:00</span>
+            </div>
+          </div>
+
+          <div class="wheel-wrap">
+            <div class="wheel" aria-label="BGM 컨트롤">
+              <button class="wheel-button prev" type="button" id="prev-button" aria-label="이전 곡" title="이전 곡"></button>
+              <button class="wheel-button next" type="button" id="next-button" aria-label="다음 곡" title="다음 곡"></button>
+              <button class="wheel-button stop" type="button" id="pause-button" aria-label="일시정지" title="일시정지"></button>
+              <button class="center-button" type="button" id="play-button" aria-label="재생" title="재생"></button>
+            </div>
+          </div>
+
+          <div class="volume-row">
+            <button class="volume-button" type="button" id="mute-button" aria-label="음소거" title="음소거"></button>
+            <input class="volume-slider" id="volume-slider" type="range" min="0" max="100" value="78" aria-label="BGM 음량" />
+            <span class="volume-label" id="volume-label">78%</span>
+          </div>
+        </section>
+
+        <section class="sound-mixer" aria-label="수딩 사운드">
+          <div class="sound-mixer-header">
+            <h2>수딩 사운드</h2>
+            <span class="ambient-total" id="ambient-total">0%</span>
+          </div>
+          <div class="wide-sound-grid" id="wide-sound-grid"></div>
+          <p class="error-line" id="error-line" aria-live="polite"></p>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const ASSET_REPO_REF = "ce01be2fd08a46e424020da8179e93ec9c489dda";
+      const ASSET_CDN_BASE_URL = `https://cdn.jsdelivr.net/gh/museumst/worrystone-assets@${ASSET_REPO_REF}`;
+      const SOUND_BASE_URL = `${ASSET_CDN_BASE_URL}/sound`;
+      const BGM_BASE_URL = `${ASSET_CDN_BASE_URL}/bgm`;
+      const BGM_ART_BASE_URL = `${ASSET_CDN_BASE_URL}/bgm-art`;
+
+      const ambientSounds = [
+        { id: "rain", label: "빗소리", icon: "rain", accentColor: "#5A9FE0", uri: `${SOUND_BASE_URL}/rain.mp3` },
+        { id: "wind", label: "바람소리", icon: "wind", accentColor: "#78B5CE", uri: `${SOUND_BASE_URL}/wind.mp3` },
+        { id: "fire", label: "모닥불소리", icon: "fire", accentColor: "#D96F45", uri: `${SOUND_BASE_URL}/fire.mp3` },
+        { id: "bugs", label: "풀벌레", icon: "bug", accentColor: "#72B54F", uri: `${SOUND_BASE_URL}/bugs.mp3` },
+        { id: "birds", label: "새소리", icon: "bird", accentColor: "#C99A38", uri: `${SOUND_BASE_URL}/birds.mp3` },
+        { id: "waves", label: "파도소리", icon: "waves", accentColor: "#3BA8A0", uri: `${SOUND_BASE_URL}/waves.mp3` },
+        { id: "cafe", label: "카페소리", icon: "coffee", accentColor: "#A0845C", uri: `${SOUND_BASE_URL}/cafe.mp3` },
+        { id: "walk", label: "산책소리", icon: "footprints", accentColor: "#7EAA72", uri: `${SOUND_BASE_URL}/walk.mp3` },
+        { id: "smallriver", label: "시냇물", icon: "fish", accentColor: "#4E9BB5", uri: `${SOUND_BASE_URL}/smallriver.mp3` },
+      ];
+
+      const bgmTracks = Array.from({ length: 9 }, (_, index) => {
+        const number = index + 1;
+        return {
+          id: String(number),
+          title: `BGM ${number}`,
+          fileName: `${number}.mp3`,
+          uri: `${BGM_BASE_URL}/${number}.mp3`,
+          artworkUri: `${BGM_ART_BASE_URL}/${number}.jpeg`,
+        };
+      });
+
+      const lightPalette = {
+        background: "#F5F5F7",
+        surface: "#FFFFFF",
+        elevated: "#F0F1F4",
+        primary: "#3182F6",
+        text: "#1A1A1A",
+        subtext: "#8E8E93",
+        border: "#E5E7EB",
+        success: "#00B87A",
+        danger: "#FF5C5C",
+      };
+      const darkPalette = {
+        background: "#18181B",
+        surface: "#27272A",
+        elevated: "#3F3F46",
+        primary: "#60A5FA",
+        text: "#F4F4F5",
+        subtext: "#A1A1AA",
+        border: "#46464F",
+        success: "#34D399",
+        danger: "#FB7185",
+      };
+
+      const state = {
+        theme: window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark",
+        activeTab: "music",
+        mode: "repeat-all",
+        currentTrackIndex: 0,
+        playing: false,
+        bgmVolume: 0.78,
+        muted: false,
+        unlocked: false,
+        ambientLevels: Object.fromEntries(ambientSounds.map((sound) => [sound.id, 0])),
+      };
+
+      const dom = {
+        body: document.body,
+        sessionStatus: document.querySelector("#session-status"),
+        themeButton: document.querySelector("#theme-button"),
+        stopAllButton: document.querySelector("#stop-all-button"),
+        currentArtwork: document.querySelector("#current-artwork"),
+        currentTitle: document.querySelector("#current-title"),
+        libraryTabs: document.querySelector("#library-tabs"),
+        tabButtons: [...document.querySelectorAll(".tab-button")],
+        musicPanel: document.querySelector("#music-panel"),
+        soundPanel: document.querySelector("#sound-panel"),
+        trackList: document.querySelector("#track-list"),
+        compactSoundGrid: document.querySelector("#compact-sound-grid"),
+        wideSoundGrid: document.querySelector("#wide-sound-grid"),
+        modeBar: document.querySelector("#mode-bar"),
+        modeButtons: [...document.querySelectorAll(".mode-button")],
+        progressTrack: document.querySelector("#progress-track"),
+        progressFill: document.querySelector("#progress-fill"),
+        progressThumb: document.querySelector("#progress-thumb"),
+        currentTime: document.querySelector("#current-time"),
+        durationTime: document.querySelector("#duration-time"),
+        prevButton: document.querySelector("#prev-button"),
+        nextButton: document.querySelector("#next-button"),
+        pauseButton: document.querySelector("#pause-button"),
+        playButton: document.querySelector("#play-button"),
+        muteButton: document.querySelector("#mute-button"),
+        volumeSlider: document.querySelector("#volume-slider"),
+        volumeLabel: document.querySelector("#volume-label"),
+        ambientTotal: document.querySelector("#ambient-total"),
+        errorLine: document.querySelector("#error-line"),
+      };
+
+      const audio = new Audio();
+      audio.crossOrigin = "anonymous";
+      audio.preload = "metadata";
+
+      let audioCtx = null;
+      let bgmSource = null;
+      let bgmGain = null;
+      const ambientNodes = new Map();
+      const ambientLoading = new Map();
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function hexToRgb(hex) {
+        const normalized = hex.replace("#", "");
+        const safeHex = normalized.length === 3
+          ? normalized.split("").map((char) => `${char}${char}`).join("")
+          : normalized;
+        const value = Number.parseInt(safeHex, 16);
+        return {
+          r: (value >> 16) & 255,
+          g: (value >> 8) & 255,
+          b: value & 255,
+        };
+      }
+
+      function mixHexColor(from, to, ratio) {
+        const clampedRatio = clamp(ratio, 0, 1);
+        const left = hexToRgb(from);
+        const right = hexToRgb(to);
+        const toHex = (value) => Math.round(value).toString(16).padStart(2, "0");
+        return `#${toHex(left.r + (right.r - left.r) * clampedRatio)}${toHex(left.g + (right.g - left.g) * clampedRatio)}${toHex(left.b + (right.b - left.b) * clampedRatio)}`;
+      }
+
+      function getPalette() {
+        return state.theme === "dark" ? darkPalette : lightPalette;
+      }
+
+      function formatPlaybackTime(seconds) {
+        const safeSeconds = Number.isFinite(seconds) ? seconds : 0;
+        const total = Math.floor(safeSeconds);
+        return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+      }
+
+      function svg(paths, attrs = "") {
+        return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${attrs}>${paths}</svg>`;
+      }
+
+      function icon(name) {
+        const icons = {
+          moon: svg('<path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.8 6.8 0 0 0 9.8 9.8Z"></path>'),
+          sun: svg('<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>'),
+          stop: svg('<rect x="6" y="6" width="12" height="12" rx="2"></rect>'),
+          play: svg('<path d="m8 5 11 7-11 7Z" fill="currentColor" stroke="none"></path>'),
+          pause: svg('<path d="M8 5v14"></path><path d="M16 5v14"></path>'),
+          prev: svg('<path d="m19 20-10-8 10-8v16Z" fill="currentColor" stroke="none"></path><path d="M5 19V5"></path>'),
+          next: svg('<path d="m5 4 10 8-10 8V4Z" fill="currentColor" stroke="none"></path><path d="M19 5v14"></path>'),
+          shuffle: svg('<path d="m18 14 4 4-4 4"></path><path d="m18 2 4 4-4 4"></path><path d="M2 18h1.8A7 7 0 0 0 10 14l4-8a7 7 0 0 1 6.2-4H22"></path><path d="M2 6h1.8A7 7 0 0 1 10 10"></path><path d="M14 18a7 7 0 0 0 6.2 4H22"></path>'),
+          repeat: svg('<path d="m17 2 4 4-4 4"></path><path d="M3 11V9a3 3 0 0 1 3-3h15"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v2a3 3 0 0 1-3 3H3"></path>'),
+          repeatOne: svg('<path d="m17 2 4 4-4 4"></path><path d="M3 11V9a3 3 0 0 1 3-3h15"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v2a3 3 0 0 1-3 3H3"></path><path d="M11 10h1v5"></path>'),
+          volume: svg('<path d="M11 5 6 9H2v6h4l5 4Z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a9 9 0 0 1 0 14"></path>'),
+          mute: svg('<path d="M11 5 6 9H2v6h4l5 4Z"></path><path d="m22 9-6 6"></path><path d="m16 9 6 6"></path>'),
+          rain: svg('<path d="M16 13H7a4 4 0 1 1 .8-7.9A5.5 5.5 0 0 1 18.4 8 3 3 0 0 1 16 13Z"></path><path d="m8 17-1 2"></path><path d="m13 17-1 2"></path><path d="m18 17-1 2"></path>'),
+          wind: svg('<path d="M3 8h11a3 3 0 1 0-3-3"></path><path d="M3 12h15a3 3 0 1 1-3 3"></path><path d="M3 16h6"></path>'),
+          fire: svg('<path d="M12 22a7 7 0 0 0 7-7c0-4-3-6-5-9-.7 2.6-2.3 3.7-4 5.4C8.6 12.8 8 14.1 8 16a4 4 0 0 0 8 0c0-1.8-1-3-2.5-4.6C13.3 14 11 15.4 11 18"></path>'),
+          bug: svg('<path d="M8 7a4 4 0 0 1 8 0"></path><rect x="7" y="7" width="10" height="12" rx="5"></rect><path d="M5 8 3 6"></path><path d="m19 8 2-2"></path><path d="M3 13h4"></path><path d="M17 13h4"></path><path d="M5 19l2-2"></path><path d="m19 19-2-2"></path>'),
+          bird: svg('<path d="M16 7h.01"></path><path d="M3 18c3-1 4.5-3.5 5-7 3 2 6 2.5 10 1-1.2 3.5-4 6-8 7"></path><path d="M18 8l3 1-3 2"></path>'),
+          waves: svg('<path d="M2 8c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"></path><path d="M2 14c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"></path><path d="M2 20c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"></path>'),
+          coffee: svg('<path d="M10 2v2"></path><path d="M14 2v2"></path><path d="M16 8h1a4 4 0 0 1 0 8h-1"></path><path d="M4 8h12v6a6 6 0 0 1-12 0Z"></path><path d="M4 22h14"></path>'),
+          footprints: svg('<path d="M4 16c.7-2.4 3.5-2 4.4-.2.8 1.8-.5 3.8-2.2 4.2C4.3 20.4 3.3 18.5 4 16Z"></path><path d="M13.5 9.2c.8-2.5 3.7-2.1 4.6-.2.9 1.8-.6 3.9-2.4 4.3-1.9.4-2.9-1.6-2.2-4.1Z"></path><path d="M6 12V8"></path><path d="M9 13V9"></path><path d="M16 5V2"></path><path d="M19 6V3"></path>'),
+          fish: svg('<path d="M6.5 12c2.5-4 7.5-4 11 0-3.5 4-8.5 4-11 0Z"></path><path d="m6.5 12-4-3v6Z"></path><path d="M15 12h.01"></path>'),
+        };
+        return icons[name] || "";
+      }
+
+      function currentTrack() {
+        return bgmTracks[state.currentTrackIndex] || bgmTracks[0];
+      }
+
+      function ensureAudioContext() {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContextClass();
+          bgmGain = audioCtx.createGain();
+          bgmGain.gain.value = state.muted ? 0 : state.bgmVolume;
+          bgmSource = audioCtx.createMediaElementSource(audio);
+          bgmSource.connect(bgmGain);
+          bgmGain.connect(audioCtx.destination);
+        }
+        return audioCtx;
+      }
+
+      async function unlockAudio() {
+        const ctx = ensureAudioContext();
+        if (ctx.state !== "running") {
+          await ctx.resume();
+        }
+        state.unlocked = true;
+        renderStatus();
+      }
+
+      async function ensureAmbient(sound) {
+        if (ambientNodes.has(sound.id)) return ambientNodes.get(sound.id);
+        if (ambientLoading.has(sound.id)) return ambientLoading.get(sound.id);
+
+        const loading = (async () => {
+          const ctx = ensureAudioContext();
+          const response = await fetch(sound.uri);
+          if (!response.ok) throw new Error(`${sound.label} 파일을 불러오지 못했어요.`);
+          const buffer = await response.arrayBuffer();
+          const decoded = await ctx.decodeAudioData(buffer);
+          const source = ctx.createBufferSource();
+          const gain = ctx.createGain();
+          source.buffer = decoded;
+          source.loop = true;
+          gain.gain.value = 0;
+          source.connect(gain);
+          gain.connect(ctx.destination);
+          source.start();
+          const node = { source, gain };
+          ambientNodes.set(sound.id, node);
+          ambientLoading.delete(sound.id);
+          applyAmbientLevel(sound.id);
+          return node;
+        })().catch((error) => {
+          ambientLoading.delete(sound.id);
+          showError(error.message || "사운드를 불러오지 못했어요.");
+          throw error;
+        });
+
+        ambientLoading.set(sound.id, loading);
+        return loading;
+      }
+
+      function applyAmbientLevel(soundId) {
+        const node = ambientNodes.get(soundId);
+        if (!node || !audioCtx) return;
+        node.gain.gain.setTargetAtTime(state.ambientLevels[soundId] || 0, audioCtx.currentTime, 0.05);
+      }
+
+      function applyBgmVolume() {
+        const value = state.muted ? 0 : state.bgmVolume;
+        if (bgmGain && audioCtx) {
+          bgmGain.gain.setTargetAtTime(value, audioCtx.currentTime, 0.04);
+        }
+        audio.volume = 1;
+        dom.volumeSlider.value = Math.round(state.bgmVolume * 100);
+        dom.volumeLabel.textContent = `${Math.round(state.bgmVolume * 100)}%`;
+        dom.muteButton.innerHTML = icon(state.muted || state.bgmVolume === 0 ? "mute" : "volume");
+      }
+
+      function setTrack(index, autoplay = state.playing) {
+        state.currentTrackIndex = (index + bgmTracks.length) % bgmTracks.length;
+        const track = currentTrack();
+        audio.src = track.uri;
+        audio.load();
+        renderTrack();
+        renderTrackList();
+        updateMediaSession();
+        if (autoplay) {
+          playBgm();
+        }
+      }
+
+      async function playBgm() {
+        try {
+          await unlockAudio();
+          if (!audio.src) {
+            audio.src = currentTrack().uri;
+          }
+          await audio.play();
+          state.playing = true;
+          renderTransport();
+          renderStatus();
+        } catch (error) {
+          state.playing = false;
+          renderTransport();
+          showError("브라우저가 오디오 재생을 막았어요.");
+        }
+      }
+
+      function pauseBgm() {
+        audio.pause();
+        state.playing = false;
+        renderTransport();
+        renderStatus();
+      }
+
+      function nextTrack() {
+        if (state.mode === "shuffle") {
+          let nextIndex = state.currentTrackIndex;
+          while (bgmTracks.length > 1 && nextIndex === state.currentTrackIndex) {
+            nextIndex = Math.floor(Math.random() * bgmTracks.length);
+          }
+          setTrack(nextIndex, true);
+          return;
+        }
+        setTrack(state.currentTrackIndex + 1, true);
+      }
+
+      function prevTrack() {
+        if (audio.currentTime > 3) {
+          audio.currentTime = 0;
+          updateProgress();
+          return;
+        }
+        setTrack(state.currentTrackIndex - 1, true);
+      }
+
+      function stopAll() {
+        pauseBgm();
+        ambientSounds.forEach((sound) => {
+          state.ambientLevels[sound.id] = 0;
+          applyAmbientLevel(sound.id);
+        });
+        updateAmbientTileViews();
+        renderStatus();
+      }
+
+      function setAmbientLevel(soundId, level) {
+        const sound = ambientSounds.find((item) => item.id === soundId);
+        if (!sound) return;
+        state.ambientLevels[soundId] = clamp(level, 0, 1);
+        updateAmbientTileViews();
+        renderStatus();
+        if (state.ambientLevels[soundId] > 0) {
+          unlockAudio()
+            .then(() => ensureAmbient(sound))
+            .then(() => applyAmbientLevel(soundId))
+            .catch(() => {});
+        } else {
+          applyAmbientLevel(soundId);
+        }
+      }
+
+      function setLevelFromPointer(tile, clientY) {
+        const rect = tile.getBoundingClientRect();
+        const nextLevel = clamp(1 - (clientY - rect.top) / Math.max(rect.height, 1), 0, 1);
+        setAmbientLevel(tile.dataset.soundId, nextLevel);
+      }
+
+      function showError(message) {
+        dom.errorLine.textContent = message;
+      }
+
+      function renderStatus() {
+        const ambientAverage = ambientSounds.reduce((sum, sound) => sum + state.ambientLevels[sound.id], 0);
+        const ambientCount = ambientSounds.filter((sound) => state.ambientLevels[sound.id] > 0.01).length;
+        dom.ambientTotal.textContent = `${Math.round((ambientAverage / ambientSounds.length) * 100)}%`;
+        if (state.playing && ambientCount > 0) {
+          dom.sessionStatus.textContent = `BGM 재생 중 · 사운드 ${ambientCount}개`;
+        } else if (state.playing) {
+          dom.sessionStatus.textContent = "BGM 재생 중";
+        } else if (ambientCount > 0) {
+          dom.sessionStatus.textContent = `사운드 ${ambientCount}개`;
+        } else {
+          dom.sessionStatus.textContent = "대기";
+        }
+      }
+
+      function renderTrack() {
+        const track = currentTrack();
+        dom.currentTitle.textContent = track.title;
+        dom.currentArtwork.src = track.artworkUri;
+      }
+
+      function renderTransport() {
+        dom.playButton.innerHTML = icon(state.playing ? "pause" : "play");
+        dom.playButton.setAttribute("aria-label", state.playing ? "일시정지" : "재생");
+        dom.pauseButton.innerHTML = icon("pause");
+      }
+
+      function renderMode() {
+        dom.modeBar.dataset.mode = state.mode;
+        dom.modeButtons.forEach((button) => {
+          const active = button.dataset.mode === state.mode;
+          button.classList.toggle("is-active", active);
+          button.innerHTML = icon(button.dataset.mode === "repeat-one" ? "repeatOne" : button.dataset.mode === "repeat-all" ? "repeat" : "shuffle");
+        });
+      }
+
+      function renderTabs() {
+        dom.libraryTabs.dataset.active = state.activeTab;
+        dom.tabButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.tab === state.activeTab));
+        dom.musicPanel.classList.toggle("is-active", state.activeTab === "music");
+        dom.soundPanel.classList.toggle("is-active", state.activeTab === "sound");
+      }
+
+      function renderTrackList() {
+        dom.trackList.innerHTML = bgmTracks.map((track, index) => `
+          <button class="track-row ${index === state.currentTrackIndex ? "is-active" : ""}" type="button" data-track-index="${index}" aria-label="${track.title}">
+            <img class="track-thumb" src="${track.artworkUri}" alt="" loading="lazy" />
+            <span class="track-row-title">${track.title}</span>
+            <span class="track-playing-dot" aria-hidden="true"></span>
+          </button>
+        `).join("");
+      }
+
+      function ambientTileMarkup(sound) {
+        const level = state.ambientLevels[sound.id] || 0;
+        const isDark = state.theme === "dark";
+        const iconColor = mixHexColor(isDark ? "#9098A8" : "#5F6776", sound.accentColor, level);
+        const fillColor = mixHexColor(isDark ? "#14161C" : "#DBE3EE", sound.accentColor, isDark ? 0.72 : 0.55);
+        return `
+          <button
+            class="ambient-tile"
+            type="button"
+            data-sound-id="${sound.id}"
+            style="color: ${iconColor}; --tile-fill: ${fillColor};"
+            aria-label="${sound.label} ${Math.round(level * 100)}%"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="${Math.round(level * 100)}"
+          >
+            <span class="ambient-fill" style="height: ${level * 100}%"></span>
+            <span class="ambient-icon">${icon(sound.icon)}</span>
+            <span class="ambient-label">${sound.label}</span>
+          </button>
+        `;
+      }
+
+      function renderAmbientTiles() {
+        const markup = ambientSounds.map(ambientTileMarkup).join("");
+        if (!dom.compactSoundGrid.children.length) {
+          dom.compactSoundGrid.innerHTML = markup;
+        }
+        if (!dom.wideSoundGrid.children.length) {
+          dom.wideSoundGrid.innerHTML = markup;
+        }
+        updateAmbientTileViews();
+        renderStatus();
+      }
+
+      function updateAmbientTileViews() {
+        ambientSounds.forEach((sound) => {
+          const level = state.ambientLevels[sound.id] || 0;
+          const isDark = state.theme === "dark";
+          const iconColor = mixHexColor(isDark ? "#9098A8" : "#5F6776", sound.accentColor, level);
+          const fillColor = mixHexColor(isDark ? "#14161C" : "#DBE3EE", sound.accentColor, isDark ? 0.72 : 0.55);
+          document.querySelectorAll(`.ambient-tile[data-sound-id="${sound.id}"]`).forEach((tile) => {
+            tile.style.color = iconColor;
+            tile.style.setProperty("--tile-fill", fillColor);
+            tile.setAttribute("aria-label", `${sound.label} ${Math.round(level * 100)}%`);
+            tile.setAttribute("aria-valuenow", String(Math.round(level * 100)));
+            tile.querySelector(".ambient-fill").style.height = `${level * 100}%`;
+          });
+        });
+      }
+
+      function updateProgress() {
+        const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+        const current = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+        const ratio = duration > 0 ? clamp(current / duration, 0, 1) : 0;
+        dom.progressFill.style.width = `${ratio * 100}%`;
+        dom.progressThumb.style.left = `calc(${ratio * 100}% - ${ratio * 16}px)`;
+        dom.currentTime.textContent = formatPlaybackTime(current);
+        dom.durationTime.textContent = formatPlaybackTime(duration);
+        dom.progressTrack.setAttribute("aria-valuemax", String(Math.round(duration)));
+        dom.progressTrack.setAttribute("aria-valuenow", String(Math.round(current)));
+      }
+
+      function seekFromClientX(clientX) {
+        const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+        if (duration <= 0) return;
+        const rect = dom.progressTrack.getBoundingClientRect();
+        const ratio = clamp((clientX - rect.left) / Math.max(rect.width, 1), 0, 1);
+        audio.currentTime = ratio * duration;
+        updateProgress();
+      }
+
+      function updateMediaSession() {
+        if (!("mediaSession" in navigator) || typeof MediaMetadata === "undefined") return;
+        const track = currentTrack();
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: track.title,
+          artist: "명상 사운드 플레이어",
+          artwork: [{ src: track.artworkUri, sizes: "512x512", type: "image/jpeg" }],
+        });
+        navigator.mediaSession.setActionHandler("play", playBgm);
+        navigator.mediaSession.setActionHandler("pause", pauseBgm);
+        navigator.mediaSession.setActionHandler("previoustrack", prevTrack);
+        navigator.mediaSession.setActionHandler("nexttrack", nextTrack);
+      }
+
+      function applyTheme() {
+        dom.body.dataset.theme = state.theme;
+        dom.themeButton.innerHTML = icon(state.theme === "dark" ? "sun" : "moon");
+        updateAmbientTileViews();
+      }
+
+      function bindEvents() {
+        document.addEventListener("pointerdown", () => {
+          unlockAudio().catch(() => {});
+        }, { once: true });
+
+        dom.themeButton.addEventListener("click", () => {
+          state.theme = state.theme === "dark" ? "light" : "dark";
+          applyTheme();
+        });
+
+        dom.stopAllButton.addEventListener("click", stopAll);
+        dom.playButton.addEventListener("click", () => {
+          if (state.playing) {
+            pauseBgm();
+          } else {
+            playBgm();
+          }
+        });
+        dom.pauseButton.addEventListener("click", pauseBgm);
+        dom.prevButton.addEventListener("click", prevTrack);
+        dom.nextButton.addEventListener("click", nextTrack);
+
+        dom.libraryTabs.addEventListener("click", (event) => {
+          const button = event.target.closest("[data-tab]");
+          if (!button) return;
+          state.activeTab = button.dataset.tab;
+          renderTabs();
+        });
+
+        dom.modeBar.addEventListener("click", (event) => {
+          const button = event.target.closest("[data-mode]");
+          if (!button) return;
+          state.mode = button.dataset.mode;
+          renderMode();
+        });
+
+        dom.trackList.addEventListener("click", (event) => {
+          const row = event.target.closest("[data-track-index]");
+          if (!row) return;
+          setTrack(Number(row.dataset.trackIndex), true);
+        });
+
+        [dom.compactSoundGrid, dom.wideSoundGrid].forEach((grid) => {
+          grid.addEventListener("pointerdown", (event) => {
+            const tile = event.target.closest(".ambient-tile");
+            if (!tile) return;
+            tile.setPointerCapture(event.pointerId);
+            setLevelFromPointer(tile, event.clientY);
+          });
+          grid.addEventListener("pointermove", (event) => {
+            const tile = event.target.closest(".ambient-tile");
+            if (!tile || event.buttons !== 1) return;
+            setLevelFromPointer(tile, event.clientY);
+          });
+        });
+
+        dom.progressTrack.addEventListener("pointerdown", (event) => {
+          dom.progressTrack.setPointerCapture(event.pointerId);
+          seekFromClientX(event.clientX);
+        });
+        dom.progressTrack.addEventListener("pointermove", (event) => {
+          if (event.buttons !== 1) return;
+          seekFromClientX(event.clientX);
+        });
+        dom.progressTrack.addEventListener("keydown", (event) => {
+          const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+          if (duration <= 0) return;
+          if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+            audio.currentTime = clamp(audio.currentTime - 5, 0, duration);
+            updateProgress();
+            event.preventDefault();
+          }
+          if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+            audio.currentTime = clamp(audio.currentTime + 5, 0, duration);
+            updateProgress();
+            event.preventDefault();
+          }
+        });
+
+        dom.volumeSlider.addEventListener("input", () => {
+          state.bgmVolume = Number(dom.volumeSlider.value) / 100;
+          state.muted = state.bgmVolume === 0;
+          applyBgmVolume();
+        });
+        dom.muteButton.addEventListener("click", () => {
+          state.muted = !state.muted;
+          applyBgmVolume();
+        });
+
+        audio.addEventListener("loadedmetadata", updateProgress);
+        audio.addEventListener("timeupdate", updateProgress);
+        audio.addEventListener("play", () => {
+          state.playing = true;
+          renderTransport();
+          renderStatus();
+        });
+        audio.addEventListener("pause", () => {
+          state.playing = false;
+          renderTransport();
+          renderStatus();
+        });
+        audio.addEventListener("ended", () => {
+          if (state.mode === "repeat-one") {
+            audio.currentTime = 0;
+            playBgm();
+          } else {
+            nextTrack();
+          }
+        });
+        audio.addEventListener("error", () => {
+          showError("BGM 파일을 불러오지 못했어요.");
+        });
+      }
+
+      function init() {
+        dom.body.dataset.theme = state.theme;
+        audio.src = currentTrack().uri;
+        dom.stopAllButton.innerHTML = icon("stop");
+        dom.prevButton.innerHTML = icon("prev");
+        dom.nextButton.innerHTML = icon("next");
+        renderTrack();
+        renderTransport();
+        renderMode();
+        renderTabs();
+        renderTrackList();
+        renderAmbientTiles();
+        applyBgmVolume();
+        applyTheme();
+        bindEvents();
+        updateMediaSession();
+        updateProgress();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
