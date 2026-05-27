@@ -165,6 +165,39 @@ const apps = [
     tags: ["history", "joseon", "memory"],
   },
   {
+    title: "그리스 신화 계보",
+    description: "원초신, 티탄, 올림포스 신과 주요 영웅의 관계를 SVG 계보도로 정리한 학습 앱입니다.",
+    i18n: {
+      ko: {
+        title: "그리스 신화 계보",
+        description: "원초신, 티탄, 올림포스 신과 주요 영웅의 관계를 SVG 계보도로 정리한 학습 앱입니다.",
+      },
+      en: {
+        title: "Greek Myth Genealogy",
+        description: "A study app that maps primordial gods, Titans, Olympians, and heroes as an SVG family tree.",
+      },
+      ja: {
+        title: "ギリシャ神話系図",
+        description: "原初神、ティタン、オリュンポス神、主な英雄の関係をSVG系図で整理した学習アプリです。",
+      },
+      zh: {
+        title: "希腊神话谱系",
+        description: "用SVG家谱图整理原初神、泰坦、奥林匹斯诸神和主要英雄关系的学习应用。",
+      },
+      es: {
+        title: "Genealogía Griega",
+        description: "Una app de estudio que organiza dioses primordiales, titanes, olímpicos y héroes en un árbol SVG.",
+      },
+    },
+    category: "study",
+    categoryLabel: "학습",
+    thumbnail: "greekmyth",
+    app_url: "apps/greekmyth/index.html",
+    status: "ready",
+    statusLabel: "실행 가능",
+    tags: ["mythology", "greek", "genealogy", "svg"],
+  },
+  {
     title: "Harmony",
     description: "코드를 선택하면 건반 위에서 눌린 음을 보여주고 실제 화음으로 들려주는 미니 신시사이저입니다.",
     i18n: {
