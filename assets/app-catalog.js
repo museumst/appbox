@@ -231,11 +231,11 @@ const apps = [
     tags: ["music", "chord", "keyboard"],
   },
   {
-    title: "명상 사운드 플레이어",
+    title: "명상 사운드",
     description: "수딩 사운드를 겹쳐 믹싱하고 BGM을 함께 재생하는 명상용 오디오 플레이어입니다.",
     i18n: {
       ko: {
-        title: "명상 사운드 플레이어",
+        title: "명상 사운드",
         description: "수딩 사운드를 겹쳐 믹싱하고 BGM을 함께 재생하는 명상용 오디오 플레이어입니다.",
       },
       en: {
