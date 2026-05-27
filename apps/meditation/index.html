@@ -142,7 +142,7 @@
         left: 0;
         height: 0;
         background: var(--fill-color, var(--accent-soft));
-        transition: height 70ms linear;
+        will-change: height;
       }
 
       .sound-icon {
@@ -261,18 +261,11 @@
       musicAudio.setAttribute("playsinline", "");
 
       const ambientAudioElements = new Map();
-      const ambientGainNodes = new Map();
-      let audioCtx = null;
+      let soundViewRafId = 0;
       let musicCarouselSettleTimer = 0;
 
       function clamp(value, min, max) {
         return Math.min(max, Math.max(min, value));
-      }
-
-      function resumeAudioContext() {
-        if (audioCtx && audioCtx.state === "suspended") {
-          audioCtx.resume().catch(() => {});
-        }
       }
 
       function hexToRgb(hex) {
@@ -347,24 +340,6 @@
         audio.preload = "auto";
         audio.volume = 0;
         audio.setAttribute("playsinline", "");
-
-        if (!audioCtx) {
-          const CtxClass = window.AudioContext || window.webkitAudioContext;
-          if (CtxClass) {
-            try { audioCtx = new CtxClass(); } catch (e) {}
-          }
-        }
-        if (audioCtx) {
-          try {
-            const source = audioCtx.createMediaElementSource(audio);
-            const gainNode = audioCtx.createGain();
-            gainNode.gain.value = 0;
-            source.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            ambientGainNodes.set(sound.id, gainNode);
-          } catch (e) {}
-        }
-
         audio.addEventListener("error", () => {
           showError(`${sound.label} 파일을 불러오지 못했어요.`);
         });
@@ -376,12 +351,7 @@
         const audio = ambientAudioElements.get(soundId);
         if (!audio) return;
         const level = clamp(state.ambientLevels[soundId] || 0, 0, 1);
-        const gainNode = ambientGainNodes.get(soundId);
-        if (gainNode) {
-          gainNode.gain.value = level;
-        } else {
-          audio.volume = level;
-        }
+        audio.volume = level;
         if (level === 0) {
           audio.pause();
         }
@@ -405,16 +375,22 @@
       function setAmbientLevel(soundId, level) {
         const sound = ambientSounds.find((item) => item.id === soundId);
         if (!sound) return;
+        const prevLevel = state.ambientLevels[soundId] || 0;
         state.ambientLevels[soundId] = clamp(level, 0, 1);
-        updateSoundTileViews();
         if (state.ambientLevels[soundId] > 0) {
           const audio = ensureAmbient(sound);
           applyAmbientLevel(soundId);
-          audio.play().catch(() => {
-            showError("사운드를 재생하지 못했어요.");
-          });
+          if (prevLevel === 0) {
+            audio.play().catch(() => showError("사운드를 재생하지 못했어요."));
+          }
         } else {
           applyAmbientLevel(soundId);
+        }
+        if (!soundViewRafId) {
+          soundViewRafId = requestAnimationFrame(() => {
+            soundViewRafId = 0;
+            updateSoundTileViews();
+          });
         }
       }
 
@@ -551,7 +527,6 @@
         dom.soundGrid.addEventListener("pointerdown", (event) => {
           const tile = event.target.closest(".sound-tile");
           if (!tile) return;
-          resumeAudioContext();
           showError("");
           event.preventDefault();
           state.activeSoundPointerId = event.pointerId;
@@ -582,7 +557,6 @@
             const tile = event.target.closest(".sound-tile");
             if (!touch || !tile) return;
             event.preventDefault();
-            resumeAudioContext();
             showError("");
             state.activeSoundTile = tile;
             setLevelFromPointer(tile, touch.clientY);
@@ -617,6 +591,18 @@
           state.playing = false;
           updateMusicTiles();
           showError("음악 파일을 불러오지 못했어요.");
+        });
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) return;
+          ambientSounds.forEach((sound) => {
+            if ((state.ambientLevels[sound.id] || 0) > 0) {
+              const audio = ambientAudioElements.get(sound.id);
+              if (audio && audio.paused) {
+                audio.play().catch(() => {});
+              }
+            }
+          });
         });
       }
 
