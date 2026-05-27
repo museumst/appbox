@@ -261,11 +261,44 @@
       musicAudio.setAttribute("playsinline", "");
 
       const ambientAudioElements = new Map();
+      const ambientGainNodes = new Map();
+      let audioCtx = null;
+      let streamDestination = null;
       let soundViewRafId = 0;
       let musicCarouselSettleTimer = 0;
 
       function clamp(value, min, max) {
         return Math.min(max, Math.max(min, value));
+      }
+
+      function ensureAudioContext() {
+        if (audioCtx) {
+          if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+          return;
+        }
+        const CtxClass = window.AudioContext || window.webkitAudioContext;
+        if (!CtxClass) return;
+        try {
+          audioCtx = new CtxClass();
+          // Route all gain nodes through a MediaStreamDestinationNode →
+          // HTMLAudioElement so iOS keeps audio alive when screen turns off.
+          streamDestination = audioCtx.createMediaStreamDestination();
+          // Looping silent buffer keeps the stream "live" even when no
+          // ambient sound is active, preventing iOS from closing the session.
+          const silentBuf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
+          const silentSrc = audioCtx.createBufferSource();
+          silentSrc.buffer = silentBuf;
+          silentSrc.loop = true;
+          silentSrc.connect(streamDestination);
+          silentSrc.start();
+          const out = new Audio();
+          out.srcObject = streamDestination.stream;
+          out.setAttribute("playsinline", "");
+          out.play().catch(() => {});
+        } catch (e) {
+          audioCtx = null;
+          streamDestination = null;
+        }
       }
 
       function hexToRgb(hex) {
@@ -340,6 +373,17 @@
         audio.preload = "auto";
         audio.volume = 0;
         audio.setAttribute("playsinline", "");
+        ensureAudioContext();
+        if (audioCtx) {
+          try {
+            const source = audioCtx.createMediaElementSource(audio);
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0;
+            source.connect(gainNode);
+            gainNode.connect(streamDestination || audioCtx.destination);
+            ambientGainNodes.set(sound.id, gainNode);
+          } catch (e) {}
+        }
         audio.addEventListener("error", () => {
           showError(`${sound.label} 파일을 불러오지 못했어요.`);
         });
@@ -351,7 +395,12 @@
         const audio = ambientAudioElements.get(soundId);
         if (!audio) return;
         const level = clamp(state.ambientLevels[soundId] || 0, 0, 1);
-        audio.volume = level;
+        const gainNode = ambientGainNodes.get(soundId);
+        if (gainNode) {
+          gainNode.gain.value = level;
+        } else {
+          audio.volume = level;
+        }
         if (level === 0) {
           audio.pause();
         }
@@ -527,6 +576,7 @@
         dom.soundGrid.addEventListener("pointerdown", (event) => {
           const tile = event.target.closest(".sound-tile");
           if (!tile) return;
+          ensureAudioContext();
           showError("");
           event.preventDefault();
           state.activeSoundPointerId = event.pointerId;
@@ -557,6 +607,7 @@
             const tile = event.target.closest(".sound-tile");
             if (!touch || !tile) return;
             event.preventDefault();
+            ensureAudioContext();
             showError("");
             state.activeSoundTile = tile;
             setLevelFromPointer(tile, touch.clientY);
@@ -595,6 +646,9 @@
 
         document.addEventListener("visibilitychange", () => {
           if (document.hidden) return;
+          if (audioCtx && audioCtx.state === "suspended") {
+            audioCtx.resume().catch(() => {});
+          }
           ambientSounds.forEach((sound) => {
             if ((state.ambientLevels[sound.id] || 0) > 0) {
               const audio = ambientAudioElements.get(sound.id);
